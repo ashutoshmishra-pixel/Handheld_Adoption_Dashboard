@@ -2579,24 +2579,19 @@
 
     // Show/hide the "Show excluded" toggle — only visible when inactive filter is active
     const showExclLabel = document.getElementById(feat + '-show-excl-label');
-    if (showExclLabel) showExclLabel.style.display = filterVal === 'inactive' ? 'flex' : 'none';
+    if (showExclLabel) showExclLabel.style.display = 'flex'; // visible on all tabs
 
     // Read toggle state
-    const showExclChecked = filterVal === 'inactive' &&
-      (document.getElementById(feat + '-show-excl')?.checked || false);
+    const showExclChecked = document.getElementById(feat + '-show-excl')?.checked || false;
 
     // Handle excluded facilities
     const excl = loadExclusions().filter(e => e.feat === feat);
-    if (filterVal === 'inactive' && excl.length > 0) {
-      if (!showExclChecked) {
-        // Default: hide excluded from inactive view
-        rows = rows.filter(r => !excl.some(e =>
-          e.tenant.toLowerCase()   === r.tenant.toLowerCase() &&
-          e.facility.toLowerCase() === r.facility.toLowerCase()
-        ));
-      }
-      // If showExclChecked: excluded facilities remain in the list
-      // and will be tagged with their exclusion reason in the Stage cell
+    // Hide excluded facilities on all tabs unless "Show excluded" is checked
+    if (excl.length > 0 && !showExclChecked) {
+      rows = rows.filter(r => !excl.some(e =>
+        e.tenant.toLowerCase()   === r.tenant.toLowerCase() &&
+        e.facility.toLowerCase() === r.facility.toLowerCase()
+      ));
     }
 
     // ── Render main tracked rows ──
@@ -2647,20 +2642,18 @@
       const _te2  = r.tenant.replace(/'/g,"\\'"), _fe2 = r.facility.replace(/'/g,"\\'");
       const cellId = `excl-${feat}-${i}`;
       const _alreadyExcluded = !!_exclReason;
-      const actionsTd = filterVal === 'inactive'
-        ? `<td id="${cellId}" style="white-space:nowrap">
-             ${actionCell}
-             ${_alreadyExcluded
-               ? `<button onclick="removeExclusion('${_te2}','${_fe2}','${feat}')"
-                    style="margin-left:6px;padding:3px 9px;font-size:11px;border:1px solid #CE93D8;
-                           background:#F3E5F5;border-radius:5px;cursor:pointer;color:#7B1FA2;font-family:inherit"
-                    title="Restore to inactive list">↩ Undo</button>`
-               : `<button onclick="triggerExclude('${_te2}','${_fe2}','${feat}','${cellId}')"
-                    style="margin-left:6px;padding:3px 9px;font-size:11px;border:1px solid #E0E0E0;
-                           background:#FAFAFA;border-radius:5px;cursor:pointer;color:#757575;font-family:inherit"
-                    title="Exclude from inactive list">🚫 Exclude</button>`}
-           </td>`
-        : `<td style="white-space:nowrap">${actionCell}</td>`;
+      // Exclude button visible on ALL tabs — not just inactive
+      const excludeOrUndoBtn = _alreadyExcluded
+        ? `<button onclick="removeExclusion('${_te2}','${_fe2}','${feat}')"
+               style="margin-left:6px;padding:3px 9px;font-size:11px;border:1px solid #CE93D8;
+                      background:#F3E5F5;border-radius:5px;cursor:pointer;color:#7B1FA2;font-family:inherit"
+               title="Remove staging exclusion">↩ Undo</button>`
+        : `<button onclick="triggerExclude('${_te2}','${_fe2}','${feat}','${cellId}')"
+               style="margin-left:6px;padding:3px 9px;font-size:11px;border:1px solid #E0E0E0;
+                      background:#FAFAFA;border-radius:5px;cursor:pointer;color:#757575;font-family:inherit"
+               title="Mark as staging / exclude from counts">🚫 Exclude</button>`;
+
+      const actionsTd = `<td id="${cellId}" style="white-space:nowrap">${actionCell}${excludeOrUndoBtn}</td>`;
 
       return `<tr style="${rowBg}">
         <td style="color:var(--uc-secondary);width:28px">${i+1}</td>
@@ -2947,7 +2940,7 @@
                style="padding:16px 18px;border-right:1px solid var(--uc-border);cursor:pointer;transition:background 0.15s"
                onmouseenter="this.style.background='#F5F9FF'" onmouseleave="this.style.background=''">
             <div style="font-size:10px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px">Active Tenants</div>
-            <div style="font-size:30px;font-weight:700;color:${color};line-height:1.1;text-decoration:underline;text-underline-offset:4px">${data.tenants || '—'}</div>
+            <div id="${feat}-summary-active-tenants" style="font-size:30px;font-weight:700;color:${color};line-height:1.1;text-decoration:underline;text-underline-offset:4px">${data.tenants || '—'}</div>
             ${newT > 0
               ? `<div style="font-size:11px;color:#2E7D32;margin-top:6px;font-weight:600;cursor:pointer" onclick="event.stopPropagation();goToDetails('new')" title="View new tenants">
                    <span style="background:#E8F5E9;border-radius:4px;padding:1px 6px">+${newT} new · last 7 days ↗</span>
@@ -2960,7 +2953,7 @@
                style="padding:16px 18px;border-right:1px solid var(--uc-border);cursor:pointer;transition:background 0.15s"
                onmouseenter="this.style.background='#F5F9FF'" onmouseleave="this.style.background=''">
             <div style="font-size:10px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px">Active Warehouses</div>
-            <div style="font-size:30px;font-weight:700;color:${color};line-height:1.1;text-decoration:underline;text-underline-offset:4px">${data.warehouses || '—'}</div>
+            <div id="${feat}-summary-active-wh" style="font-size:30px;font-weight:700;color:${color};line-height:1.1;text-decoration:underline;text-underline-offset:4px">${data.warehouses || '—'}</div>
             ${newW > 0
               ? `<div style="font-size:11px;color:#2E7D32;margin-top:6px;font-weight:600;cursor:pointer" onclick="event.stopPropagation();goToDetails('new')" title="View new warehouses">
                    <span style="background:#E8F5E9;border-radius:4px;padding:1px 6px">+${newW} new · last 7 days ↗</span>
@@ -3207,14 +3200,27 @@
   // derived from the live backend data, excluding user-excluded facilities.
   function updateSummaryInactiveCounts() {
     ['b2c', 'b2b', 'cc'].forEach(feat => {
-      const excl  = loadExclusions().filter(e => e.feat === feat);
+      const excl    = loadExclusions().filter(e => e.feat === feat);
+      const exclSet = new Set(excl.map(e => e.tenant.toLowerCase() + '||' + e.facility.toLowerCase()));
+
+      // Inactive count — exclude staging accounts
       const count = facilities.filter(f =>
         f['_inactive_' + feat] === true &&
-        !excl.some(e =>
-          e.tenant.toLowerCase()   === f.tenant.toLowerCase() &&
-          e.facility.toLowerCase() === f.facility.toLowerCase()
-        )
+        !exclSet.has(f.tenant.toLowerCase() + '||' + f.facility.toLowerCase())
       ).length;
+
+      // Active counts — exclude staging accounts from Active Tenants & Warehouses
+      const activeFacs    = facilities.filter(f =>
+        f['_in_' + feat] && !f['_inactive_' + feat] &&
+        !exclSet.has(f.tenant.toLowerCase() + '||' + f.facility.toLowerCase())
+      );
+      const activeTenants = new Set(activeFacs.map(f => f.tenant.toLowerCase())).size;
+      const activeWH      = activeFacs.length;
+
+      const tenantEl = document.getElementById(feat + '-summary-active-tenants');
+      const whEl     = document.getElementById(feat + '-summary-active-wh');
+      if (tenantEl && activeTenants > 0) tenantEl.textContent = activeTenants;
+      if (whEl     && activeWH      > 0) whEl.textContent     = activeWH;
       const numEl   = document.getElementById(feat + '-summary-inactive-num');
       const subEl   = document.getElementById(feat + '-summary-inactive-sub');
       const cellEl  = document.getElementById(feat + '-summary-inactive-cell');
