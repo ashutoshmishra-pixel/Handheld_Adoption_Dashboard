@@ -1235,8 +1235,8 @@
       <!-- ── SECTION 1: Warehouse Journey ── -->
       <div class="df-section">
         <div class="df-section-hdr">
-          <span id="df-journey-title">🗺 Warehouse Journey</span>
-          <span class="df-section-sub" id="df-journey-sub">Adoption progress for this facility</span>
+          <span id="df-journey-title">📊 Adoption Status</span>
+          <span class="df-section-sub" id="df-journey-sub">Live activity for this facility</span>
         </div>
         <div id="df-journey"></div>
       </div>
@@ -1459,9 +1459,9 @@
     const modLabel = { b2c:'B2C Picking', b2b:'B2B Picking', cc:'Cycle Count' };
     const modIcon  = { b2c:'📦', b2b:'🏭', cc:'🔄' };
     const jTitleEl = document.getElementById('df-journey-title');
-    if (jTitleEl) jTitleEl.textContent = `${modIcon[feature]||'🗺'} ${modLabel[feature]||'Warehouse'} Journey`;
+    if (jTitleEl) jTitleEl.textContent = '📊 Adoption Status';
     const jSubEl = document.getElementById('df-journey-sub');
-    if (jSubEl) jSubEl.textContent = `Stage progress for ${facility}`;
+    if (jSubEl) jSubEl.textContent = 'Live activity for ' + facility;
     const subEl = document.getElementById('df-issues-sub');
     if (subEl) subEl.textContent = `Tenant-level · ${modLabel[feature]||''} & General App Issues`;
     renderWarehouseJourney();
@@ -1474,49 +1474,97 @@
 
   /* ── Section 1: Warehouse Journey — view-only ── */
   function renderWarehouseJourney() {
-    const allEntries = loadEntries();
-    const fac = facilities.find(f => f.tenant === dfTenant && f.facility === dfFacility);
     const key = dfFeature;
+    const fac = facilities.find(f =>
+      f.tenant.toLowerCase()   === dfTenant.toLowerCase() &&
+      f.facility.toLowerCase() === dfFacility.toLowerCase()
+    );
 
-    const e   = allEntries.find(x => x.feature === key && x.tenant === dfTenant && x.facility === dfFacility);
-    const eff = e?.stage || (fac?.config && (fac[key] || 0) > 0 ? 'started' : null);
+    // ── Core data from backend ──────────────────────────────────────────────
+    const drr            = fac ? Math.round(fac[key] || 0)        : 0;
+    const goLive         = fac ? (fac.config || '')               : '';
+    const dailyValues    = fac ? (fac['_daily_'      + key] || []) : [];
+    const lastActiveDate = fac ? (fac['_lastActive_' + key] || '') : '';
+    const inactiveDays   = fac ? (fac['_inactiveDays_' + key] || 0) : 0;
+    const isInactive     = fac ? (fac['_inactive_' + key] === true) : false;
+    const isNew          = fac ? (fac['_new_' + key] === true)      : false;
+    const isExcl         = isExcluded(dfTenant, dfFacility, key);
+    const exclReason     = isExcl ? getExclusionReason(dfTenant, dfFacility, key) : null;
 
-    // Two stages: Started and On Hold
-    const stages = [
-      { id:'started', label:'Go-Live' },
-      { id:'on_hold', label:'On Hold' },
-    ];
-    const curIdx = eff ? stages.findIndex(s => s.id === eff) : -1;
-    const goLive = e?.startDate || fac?.config || '';
+    const FEAT_COLOR = { b2c: '#1F87C2', b2b: '#4A934A', cc: '#9C27B0' };
+    const color = FEAT_COLOR[key] || '#1F87C2';
+    const DRR_UNIT = { b2c: 'picks', b2b: 'picks', cc: 'count scans' };
+    const unit = DRR_UNIT[key] || 'picks';
 
-    const stageNodes = stages.map((s, idx) => {
-      const current = idx === curIdx;
-      const onHold  = s.id === 'on_hold' && eff === 'on_hold';
-      const bg     = current ? (onHold ? '#FFF3E0' : '#E8F5E9') : '#FAFAFA';
-      const col    = current ? (onHold ? '#E65100' : '#2E7D32') : '#BDBDBD';
-      const fw     = current ? '700' : '500';
-      const border = current ? `2px solid ${onHold?'#FF9800':'#4CAF50'}` : '1.5px solid #E0E0E0';
-      const check  = current ? (onHold ? '⚠ ' : '● ') : '';
-      const dateStr = current && goLive ? goLive : '';
-      return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;flex:1">
-        <div style="padding:6px 16px;border-radius:20px;font-size:12px;font-weight:${fw};color:${col};background:${bg};border:${border};white-space:nowrap">${check}${s.label}</div>
-        <div style="font-size:10px;color:${dateStr?col:'#BDBDBD'};white-space:nowrap;font-weight:500">${dateStr || '—'}</div>
+    // ── Status badge ───────────────────────────────────────────────────────
+    const statusHtml = exclReason
+      ? `<span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:#F3E5F5;color:#7B1FA2">🚫 ${exclReason}</span>`
+      : isNew
+        ? `<span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:#E3F2FD;color:#1565C0">🆕 New Adopter</span>`
+        : isInactive
+          ? `<span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:#F5F5F5;color:#757575">⚫ Inactive · ${inactiveDays}d</span>`
+          : `<span style="display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700;background:#E8F5E9;color:#2E7D32">🟢 Active</span>`;
+
+    // ── KPI strip (Status | Go-live | DRR | Last active) ───────────────────
+    const kpiHtml = `
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--uc-border);border-radius:8px;overflow:hidden;margin-bottom:18px">
+        <div style="padding:12px 14px;border-right:1px solid var(--uc-border)">
+          <div style="font-size:10px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px">Status</div>
+          ${statusHtml}
+        </div>
+        <div style="padding:12px 14px;border-right:1px solid var(--uc-border)">
+          <div style="font-size:10px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px">Go-Live</div>
+          <div style="font-size:15px;font-weight:700;color:var(--uc-body-text)">${goLive || '—'}</div>
+        </div>
+        <div style="padding:12px 14px;border-right:1px solid var(--uc-border)">
+          <div style="font-size:10px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px">Avg DRR</div>
+          <div style="font-size:15px;font-weight:700;color:${color}">${drr ? drr.toLocaleString('en-IN') : '—'}</div>
+          <div style="font-size:10px;color:var(--uc-secondary);margin-top:2px">${unit}/day · 7d avg</div>
+        </div>
+        <div style="padding:12px 14px">
+          <div style="font-size:10px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px">Last Active</div>
+          <div style="font-size:15px;font-weight:700;color:${isInactive ? '#F57F17' : 'var(--uc-body-text)'}">${lastActiveDate || (drr > 0 ? 'Recent' : '—')}</div>
+        </div>
       </div>`;
-    });
 
-    const pipelineHtml = `<div style="display:flex;align-items:flex-start;gap:0;margin:10px 0 14px;width:100%">` +
-      stageNodes.map((node, idx) => node + (idx < stages.length - 1
-        ? `<div style="height:2px;background:#E0E0E0;min-width:24px;flex:0 0 40px;margin-top:15px"></div>` : '')
-      ).join('') + `</div>`;
+    // ── 7-Day Activity Chart ────────────────────────────────────────────────
+    // dailyValues = [day-1, day-2, …, day-7] newest first → reverse for display
+    const displayVals = [...dailyValues].reverse(); // oldest left, newest right
+    const maxVal = Math.max(...displayVals, 1);
+    const today = new Date();
+    const MOS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const DAY = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-    const csm   = e?.csm   || '';
-    const notes = e?.notes || '';
-    const metaHtml = `<div style="display:flex;align-items:center;gap:12px;font-size:11px;color:var(--uc-secondary);flex-wrap:wrap">
-      ${csm   ? `<span>👤 CSM: <strong>${csm}</strong></span>` : ''}
-      ${notes ? `<span title="${notes}">📝 ${notes.slice(0,80)}${notes.length>80?'…':''}</span>` : ''}
-    </div>`;
+    const chartHtml = displayVals.length > 0 ? (() => {
+      const bars = displayVals.map((v, i) => {
+        const daysAgo = displayVals.length - i; // 7, 6, 5, … 1
+        const d = new Date(today);
+        d.setDate(d.getDate() - daysAgo);
+        const dayLabel = DAY[d.getDay()];
+        const dateLabel = d.getDate() + ' ' + MOS[d.getMonth()];
+        const pct = Math.max((v / maxVal) * 100, v > 0 ? 8 : 0);
+        const barColor = v > 0 ? color : '#E0E0E0';
+        const valLabel = v > 0
+          ? (v >= 1000 ? (v/1000).toFixed(1) + 'k' : v.toString())
+          : '';
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1">
+          <div style="font-size:9px;color:${v>0?color:'#BDBDBD'};font-weight:600;height:12px;line-height:12px">${valLabel}</div>
+          <div style="width:100%;background:#F5F5F5;border-radius:3px;height:52px;display:flex;align-items:flex-end;overflow:hidden">
+            <div style="width:100%;background:${barColor};border-radius:3px 3px 0 0;height:${pct}%;min-height:${v>0?2:0}px;transition:height 0.3s"></div>
+          </div>
+          <div style="font-size:9px;font-weight:700;color:#757575;text-align:center">${dayLabel}</div>
+          <div style="font-size:8px;color:#BDBDBD;text-align:center">${dateLabel}</div>
+        </div>`;
+      }).join('');
 
-    document.getElementById('df-journey').innerHTML = pipelineHtml + metaHtml;
+      return `
+        <div style="margin-bottom:6px">
+          <div style="font-size:11px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:10px">Last 7 Days Activity</div>
+          <div style="display:flex;gap:4px;align-items:flex-end">${bars}</div>
+        </div>`;
+    })() : '';
+
+    document.getElementById('df-journey').innerHTML = kpiHtml + chartHtml;
   }
   function closeDetailsFlyout() {
     document.getElementById('details-flyout-overlay').classList.remove('open');
@@ -2210,6 +2258,8 @@
           isNew:        f['_new_'          + feat] || false,
           isInactive:   f['_inactive_'     + feat] || false,
           inactiveDays: f['_inactiveDays_' + feat] || 0,
+          dailyValues:   f['_daily_'        + feat] || [],
+          lastActiveDate:f['_lastActive_'   + feat] || '',
           id:        entry ? entry.id        : null,
           stage:     entry ? entry.stage     : null,
           csm:       entry ? entry.csm       : null,
@@ -3062,6 +3112,8 @@
         map[k]['_new_'         + feat]  = r.isNew       || false;
         map[k]['_inactive_'    + feat]  = r.isInactive  || false;
         map[k]['_inactiveDays_'+ feat]  = r.inactiveDays || 0;
+        map[k]['_daily_'       + feat]  = r.dailyValues    || [];
+        map[k]['_lastActive_'  + feat]  = r.lastActiveDate || '';
 
         // Keep the earliest config date across all features (proper date comparison)
         const rc = r.config || '';
