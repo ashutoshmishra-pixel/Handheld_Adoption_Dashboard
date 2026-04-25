@@ -778,7 +778,7 @@
         <div class="uc-table-wrap">
           <table class="uc-table">
             <thead>
-              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th id="b2c-th-csm">CSM</th><th id="b2c-th-drr">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
+              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th id="b2c-th-drr">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
             </thead>
             <tbody id="b2c-tbody"></tbody>
           </table>
@@ -1013,7 +1013,7 @@
         <div class="uc-table-wrap">
           <table class="uc-table">
             <thead>
-              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th id="b2b-th-csm">CSM</th><th id="b2b-th-drr">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
+              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th id="b2b-th-drr">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
             </thead>
             <tbody id="b2b-tbody"></tbody>
           </table>
@@ -1144,7 +1144,7 @@
         <div class="uc-table-wrap">
           <table class="uc-table">
             <thead>
-              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th id="cc-th-csm">CSM</th><th id="cc-th-drr">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
+              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th id="cc-th-drr">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
             </thead>
             <tbody id="cc-tbody"></tbody>
           </table>
@@ -2384,6 +2384,7 @@
     const merged = buildMergedRows(feat);
     const points = [];
     merged.forEach(r => {
+      if (isExcluded(r.tenant, r.facility, feat)) return; // skip staging accounts
       const date = parseDashDate(r.startDate || r.configDate);
       if (!date) return;
       points.push({ tenant: r.tenant, facility: r.facility, date });
@@ -2571,11 +2572,9 @@
     if (!tbody) return;
     if (suggestEl) suggestEl.innerHTML = '';
 
-    // Hide/show DRR and CSM column headers based on filter
+    // Hide/show DRR column header based on filter (CSM column removed entirely)
     const drrTh = document.getElementById(feat + '-th-drr');
-    const csmTh = document.getElementById(feat + '-th-csm');
     if (drrTh) drrTh.style.display = filterVal === 'inactive' ? 'none' : '';
-    if (csmTh) csmTh.style.display = filterVal === 'inactive' ? 'none' : '';
 
     // Show/hide the "Show excluded" toggle — only visible when inactive filter is active
     const showExclLabel = document.getElementById(feat + '-show-excl-label');
@@ -2660,7 +2659,7 @@
         <td style="font-weight:700">${r.tenant}</td>
         <td style="color:var(--uc-secondary);font-size:12px">${r.facility}</td>
         <td>${stageCell}</td>
-        ${filterVal !== 'inactive' ? `<td>${csmCell}</td>` : ''}
+        
         ${filterVal !== 'inactive' ? `<td style="font-size:12px">${drrCell}</td>` : ''}
         <td>${startCell}</td>
         <td>${notesCell}</td>
