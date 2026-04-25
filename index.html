@@ -1,0 +1,3145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Handheld Adoption & Training — Unicommerce</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <!-- Google Identity Services for domain-restricted login -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Tenant+facility data written by sync-tenant-data.py. Safe to omit — dashboard falls back to sheet data. -->
+  <script src="./tenant-data.js" onerror="window._TF_DATA=null;window._TF_UPDATED=null;"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --uc-primary:     #1F87C2;
+      --uc-primary-lt:  #5AADD6;
+      --uc-dark-bg:     #161616;
+      --uc-sidebar:     #1A1A1A;
+      --uc-body-text:   #424242;
+      --uc-secondary:   #757575;
+      --uc-disabled:    #CCCCCC;
+      --uc-white:       #FFFFFF;
+      --uc-success:     #4A934A;
+      --uc-warning:     #F57F17;
+      --uc-error:       #AD2820;
+      --uc-error-bg:    #FFEBEE;
+      --uc-success-bg:  #F1FBF1;
+      --uc-border:      #E0E0E0;
+      --uc-row-alt:     #FAFAFA;
+      --uc-table-hdr:   #F5F5F5;
+    }
+    body {
+      font-family: 'Roboto', sans-serif;
+      font-variation-settings: 'wdth' 100;
+      background: #F0F2F5;
+      color: var(--uc-body-text);
+      font-size: 14px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* TOP NAV */
+    .top-nav {
+      height: 48px;
+      background: var(--uc-white);
+      border-bottom: 1px solid var(--uc-border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      flex-shrink: 0;
+      z-index: 100;
+    }
+    .top-nav__logo { display: flex; align-items: center; font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
+    .logo-uni  { color: #0CA8C8; }
+    .logo-ware { color: #8DC63F; }
+    .top-nav__divider { width: 1px; height: 24px; background: var(--uc-border); margin: 0 8px; }
+    .top-nav__title { font-size: 14px; font-weight: 700; color: var(--uc-body-text); }
+    .top-nav__badge {
+      background: #FFF3E0; color: #E65100;
+      font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 4px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .top-nav__spacer { flex: 1; }
+    .top-nav__actions { display: flex; gap: 8px; align-items: center; }
+    .nav-icon-btn {
+      width: 32px; height: 32px; border-radius: 8px;
+      border: 1px solid var(--uc-border); background: var(--uc-white);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--uc-secondary); font-size: 15px;
+    }
+    .nav-icon-btn:hover { background: var(--uc-table-hdr); }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--uc-primary); color: var(--uc-white);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; cursor: pointer;
+    }
+
+    /* APP BODY */
+    .app-body { display: flex; flex: 1; overflow: hidden; }
+
+    /* SIDEBAR — Feature Nav */
+    .sidebar {
+      width: 196px; background: var(--uc-sidebar);
+      display: flex; flex-direction: column;
+      padding: 12px 0; gap: 2px; flex-shrink: 0; overflow: hidden;
+    }
+    .sidebar-section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+      color: #555; text-transform: uppercase;
+      padding: 0 14px 6px; margin-top: 4px;
+    }
+    .feat-nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 14px; margin: 0 6px; border-radius: 8px;
+      cursor: pointer; color: #9E9E9E; font-size: 13px; font-weight: 500;
+      transition: background 0.15s, color 0.15s; user-select: none;
+      position: relative;
+    }
+    .feat-nav-item:hover { background: rgba(255,255,255,0.06); color: #E0E0E0; }
+    .feat-nav-item.active { background: rgba(31,135,194,0.18); color: #fff; font-weight: 700; }
+    .feat-nav-item.active::before {
+      content: ''; position: absolute; left: -6px; top: 50%; transform: translateY(-50%);
+      width: 3px; height: 60%; background: var(--uc-primary); border-radius: 0 3px 3px 0;
+    }
+    .feat-nav-item .feat-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+    .feat-nav-badge {
+      margin-left: auto; font-size: 9px; font-weight: 700; padding: 2px 5px;
+      border-radius: 4px; background: rgba(31,135,194,0.3); color: #5AADD6; letter-spacing: 0.3px;
+    }
+    .feat-nav-divider { height: 1px; background: #2A2A2A; margin: 8px 10px; }
+    .feat-nav-item.disabled { opacity: 0.35; cursor: default; pointer-events: none; }
+    /* legacy icon support */
+    .sidebar-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--uc-secondary); font-size: 18px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .sidebar-icon:hover, .sidebar-icon.active { background: rgba(31,135,194,0.15); color: var(--uc-primary); }
+
+    /* MAIN */
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    /* PAGE TABS */
+    .page-tabs {
+      background: var(--uc-white);
+      border-bottom: 1px solid var(--uc-border);
+      display: flex; align-items: center;
+      padding: 0 16px; flex-shrink: 0;
+    }
+    .page-tab {
+      padding: 12px 16px; font-size: 14px; color: var(--uc-secondary);
+      cursor: pointer; border-bottom: 2px solid transparent;
+      white-space: nowrap; display: flex; align-items: center; gap: 6px;
+      transition: color 0.15s, border-color 0.15s; user-select: none;
+    }
+    .page-tab:hover { color: var(--uc-primary); }
+    .page-tab.active { color: var(--uc-primary); border-bottom-color: var(--uc-primary); font-weight: 700; }
+
+    /* SCROLL */
+    .scroll-area { flex: 1; overflow-y: auto; padding: 20px; }
+    .section-panel { display: none; }
+    .section-panel.active { display: block; }
+    .feat-panel { display: none; }
+    .feat-panel.active { display: block; }
+
+    /* ── KPI CARDS ── */
+    .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+    .kpi-card {
+      background: var(--uc-white); border: 1px solid var(--uc-border);
+      border-radius: 8px; padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      position: relative; overflow: hidden;
+    }
+    .kpi-card__accent { position: absolute; top: 0; left: 0; width: 4px; height: 100%; border-radius: 8px 0 0 8px; }
+    .kpi-card__label { font-size: 11px; color: var(--uc-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .kpi-card__value { font-size: 28px; font-weight: 700; color: var(--uc-body-text); line-height: 1; margin-bottom: 4px; }
+    .kpi-card__sub  { font-size: 12px; color: var(--uc-secondary); }
+    .kpi-card__delta { font-size: 12px; font-weight: 700; margin-top: 4px; }
+    .delta-up { color: var(--uc-success); }
+    .delta-dn { color: var(--uc-error); }
+
+    /* ── CHART CARDS ── */
+    .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+    .card { background: var(--uc-white); border: 1px solid var(--uc-border); border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden; }
+    .card-header {
+      padding: 11px 16px; border-bottom: 1px solid var(--uc-border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .card-header h3 { font-size: 13px; font-weight: 700; color: var(--uc-body-text); }
+    .card-header-sub { font-size: 12px; color: var(--uc-secondary); }
+    .card-body { padding: 16px; }
+
+    /* ── FUNNEL ── */
+    .funnel-wrap { display: flex; flex-direction: column; gap: 8px; }
+    .funnel-step { display: flex; align-items: center; gap: 10px; }
+    .funnel-label { font-size: 12px; color: var(--uc-secondary); width: 110px; text-align: right; flex-shrink: 0; }
+    .funnel-bar-wrap { flex: 1; background: #F0F0F0; border-radius: 4px; height: 26px; overflow: hidden; }
+    .funnel-bar {
+      height: 100%; border-radius: 4px;
+      display: flex; align-items: center; padding-left: 10px;
+      font-size: 12px; font-weight: 700; color: var(--uc-white);
+    }
+    .funnel-count { font-size: 13px; font-weight: 700; color: var(--uc-body-text); width: 24px; text-align: right; flex-shrink: 0; }
+
+    /* ── WORKFLOW BARS ── */
+    .wf-list { display: flex; flex-direction: column; gap: 11px; }
+    .wf-top { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 13px; }
+    .wf-bar-bg { background: #F0F0F0; border-radius: 4px; height: 8px; overflow: hidden; }
+    .wf-bar-fill { height: 100%; border-radius: 4px; }
+
+    /* ── REDASH STATUS BANNER ── */
+    .redash-banner {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 14px; border-radius: 8px; margin-bottom: 16px;
+      font-size: 12px; border: 1px solid;
+    }
+    .redash-banner.loading { background:#F5F5F5; border-color:#E0E0E0; color:#757575; }
+    .redash-banner.ok      { background:#F1FBF1; border-color:#C8E6C9; color:#2E7D32; }
+    .redash-banner.error   { background:#FFF3E0; border-color:#FFE0B2; color:#E65100; }
+    .redash-banner .rb-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .redash-banner.loading .rb-dot { background:#BDBDBD; animation: pulse 1.2s infinite; }
+    .redash-banner.ok .rb-dot      { background:#4A934A; }
+    .redash-banner.error .rb-dot   { background:#F57F17; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .rb-resync { margin-left:auto; cursor:pointer; font-weight:700; text-decoration:underline; }
+
+    /* ── STAGE BADGES ── */
+    .stage-badge {
+      display:inline-block; font-size:11px; font-weight:700;
+      padding:3px 9px; border-radius:4px; white-space:nowrap;
+    }
+    .stage-demo-scheduled { background:#FFF3E0; color:#E65100; }
+    .stage-demo-done      { background:#E3F2FD; color:#1565C0; }
+    .stage-started        { background:#E8F5E9; color:#2E7D32; }
+    .stage-on-hold        { background:#F5F5F5; color:#757575; border:1px solid #E0E0E0; }
+
+    /* ── ADOPTION FUNNEL STRIP ── */
+    .funnel-strip {
+      display: grid; gap: 0; margin-bottom: 20px;
+      border: 1px solid var(--uc-border); border-radius: 8px; overflow: hidden;
+    }
+    .funnel-strip-4 { grid-template-columns: repeat(4, 1fr); }
+    .funnel-strip-5 { grid-template-columns: repeat(4, 1fr) 1.2fr; }
+    .funnel-strip-3 { grid-template-columns: repeat(2, 1fr) 1.2fr; }
+    .funnel-cell {
+      padding: 12px 16px; border-right: 1px solid var(--uc-border);
+      background: var(--uc-white);
+    }
+    .funnel-cell:last-child { border-right: none; }
+    .funnel-cell-label { font-size: 11px; color: var(--uc-secondary); margin-bottom: 4px; }
+    .funnel-cell-val   { font-size: 24px; font-weight: 700; color: var(--uc-body-text); }
+    .funnel-cell-unit  { font-size: 10px; color: var(--uc-secondary); margin-top: 2px; }
+    .funnel-cell-val.started { color: #2E7D32; }
+    .funnel-cell.clickable { cursor:pointer; transition:background 0.15s; }
+    .funnel-cell.clickable:hover { background:#F5F9FF; }
+    .funnel-cell.clickable:hover .funnel-cell-val { text-decoration:underline; text-underline-offset:3px; }
+    .funnel-cell-val.demo-sched { color: #E65100; }
+    .funnel-cell-val.demo-done  { color: #1565C0; }
+    .funnel-cell-val.on-hold    { color: #757575; }
+    .funnel-cell-arrow { display: flex; align-items: center; justify-content: center; background: #FAFAFA; font-size: 18px; color: #BDBDBD; }
+
+    /* ── PRIMARY ACTION BUTTON (modal save) ── */
+    .btn-primary-save {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--uc-primary); color: #fff;
+      border: none; border-radius: 8px; padding: 9px 18px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    .btn-primary-save:hover { background: #1670a0; }
+
+    /* ── GHOST ROWS (pending Redash facilities not yet in sheet) ── */
+    .ghost-row td { background: #FAFAFA; color: #BDBDBD; font-style: italic; border-top: 1px dashed #EEEEEE !important; }
+    .ghost-row td.ghost-tenant { font-weight: 600; font-style: normal; color: #9E9E9E; }
+    .ghost-row td.ghost-fac    { font-style: italic; color: #BDBDBD; font-size: 12px; }
+    .btn-start-track {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: transparent; border: 1.5px solid var(--uc-primary);
+      color: var(--uc-primary); border-radius: 6px; padding: 4px 11px;
+      font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap;
+    }
+    .btn-start-track:hover { background: rgba(31,135,194,0.07); }
+
+    /* ── SUGGEST BANNER (tenant not tracked) ── */
+    .suggest-banner {
+      display: flex; align-items: center; gap: 8px;
+      background: #EFF6FB; border: 1px solid #90CAF9;
+      border-radius: 8px; padding: 10px 14px;
+      margin-bottom: 8px; font-size: 12.5px; color: var(--uc-primary);
+    }
+    .suggest-banner.suggest-empty { background: #F5F5F5; border-color: #E0E0E0; color: #757575; }
+
+    /* ── ENTRY FLYOUT ── */
+    .entry-flyout-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.28); z-index: 300;
+    }
+    .entry-flyout-overlay.open { display: block; }
+    .entry-flyout {
+      position: fixed; top: 0; right: 0; bottom: 0;
+      width: 420px; max-width: 100vw;
+      background: var(--uc-white);
+      box-shadow: -4px 0 32px rgba(0,0,0,0.13);
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.24s cubic-bezier(0.4,0,0.2,1);
+      z-index: 301;
+    }
+    .entry-flyout-overlay.open .entry-flyout { transform: translateX(0); }
+    .entry-flyout-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--uc-border);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .entry-flyout-header h3 { font-size: 15px; font-weight: 700; }
+    .entry-flyout-body {
+      padding: 20px; display: flex; flex-direction: column; gap: 14px;
+      overflow-y: auto; flex: 1;
+    }
+    .entry-flyout-footer {
+      padding: 14px 20px; border-top: 1px solid var(--uc-border);
+      display: flex; gap: 10px; justify-content: flex-end; flex-shrink: 0;
+    }
+
+    /* ── DETAILS FLYOUT SECTIONS ── */
+    .df-section { padding: 18px 20px; border-bottom: 1px solid var(--uc-border); }
+    .df-section-hdr {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+      font-size: 12px; font-weight: 700; color: var(--uc-body-text); text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .df-section-sub { font-size: 11px; font-weight: 400; color: var(--uc-secondary); text-transform: none; letter-spacing: 0; }
+    .df-journey-row {
+      display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+      background: #FAFAFA; border: 1px solid var(--uc-border); border-radius: 8px; margin-bottom: 8px;
+    }
+    .df-journey-feat { font-size: 12px; font-weight: 700; width: 90px; flex-shrink: 0; }
+    .df-journey-meta { font-size: 11px; color: var(--uc-secondary); flex: 1; }
+    .df-journey-action { flex-shrink: 0; }
+    .df-issue-card {
+      padding: 10px 12px; border-radius: 8px; border: 1px solid var(--uc-border);
+      background: var(--uc-white); margin-bottom: 8px;
+    }
+    .df-issue-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+    .df-issue-meta { font-size: 11px; color: var(--uc-secondary); }
+    .df-issue-desc { font-size: 13px; margin-top: 5px; line-height: 1.5; }
+    .df-issue-resolved { opacity: 0.45; }
+    .df-priority-p0 { background:#FFEBEE;color:#AD2820; }
+    .df-priority-p1 { background:#FFF3E0;color:#E65100; }
+    .df-priority-p2 { background:#FFFDE7;color:#F57F17; }
+    .df-priority-p3 { background:#F5F5F5;color:#757575; }
+    .df-priority { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; }
+
+    /* ── SEARCHABLE SELECT ── */
+    .ss-wrap { position: relative; }
+    .ss-input {
+      width: 100%; border: 1px solid var(--uc-border); border-radius: 8px;
+      padding: 8px 12px 8px 34px; font-size: 13px; font-family: 'Roboto', sans-serif;
+      color: var(--uc-body-text); background: var(--uc-white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239E9E9E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E") no-repeat 10px center;
+      outline: none; box-sizing: border-box;
+    }
+    .ss-input:focus { border-color: var(--uc-primary); }
+    .ss-input.has-value { font-weight: 600; color: var(--uc-body-text); }
+    .ss-list {
+      display: none; position: absolute; top: calc(100% + 2px); left: 0; right: 0;
+      background: var(--uc-white); border: 1px solid var(--uc-border);
+      border-radius: 0 0 8px 8px; max-height: 200px; overflow-y: auto;
+      z-index: 20; box-shadow: 0 6px 18px rgba(0,0,0,0.10);
+    }
+    .ss-list.open { display: block; }
+    .ss-option {
+      padding: 9px 12px; font-size: 13px; cursor: pointer;
+      color: var(--uc-body-text); border-bottom: 1px solid #F5F5F5;
+    }
+    .ss-option:last-child { border-bottom: none; }
+    .ss-option:hover { background: #EFF6FB; }
+    .ss-option.ss-hint { color: var(--uc-secondary); font-style: italic; cursor: default; background: none; }
+
+    /* ── INLINE ADD MANUALLY LINK ── */
+    .btn-add-inline {
+      background: none; border: none; color: var(--uc-primary); font-size: 12px;
+      font-family: inherit; cursor: pointer; padding: 0; text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .btn-add-inline:hover { color: #1670a0; }
+
+    /* ── STAGE SELECTOR ── */
+    .stage-selector { display: grid; grid-template-columns: repeat(2,1fr); gap: 8px; }
+    .stage-option {
+      padding: 8px 12px; border-radius: 7px; border: 2px solid var(--uc-border);
+      cursor: pointer; font-size: 12px; font-weight: 600; text-align: center;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .stage-option:hover { border-color: var(--uc-primary); }
+    .stage-option.selected { border-color: var(--uc-primary); background: #EBF5FB; }
+    .stage-option.stage-on-hold.selected { border-color: #9E9E9E; background: #F5F5F5; }
+
+    /* ── TREND CHART ── */
+    .trend-card { margin-bottom: 20px; }
+
+    /* ── SECTION DIVIDER ── */
+    .section-divider {
+      display: flex; align-items: center; gap: 12px;
+      margin: 4px 0 14px;
+    }
+    .section-divider-label {
+      font-size: 13px; font-weight: 700; color: var(--uc-body-text);
+      white-space: nowrap;
+    }
+    .section-divider-line { flex: 1; height: 1px; background: var(--uc-border); }
+
+    /* ── RAG CHIPS ── */
+    .rag-chips { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .rag-chip {
+      padding: 6px 14px; border-radius: 4px; font-size: 13px; font-weight: 500;
+      border: 1px solid var(--uc-border); background: var(--uc-white);
+      cursor: pointer; transition: all 0.15s; user-select: none;
+    }
+    .rag-chip:hover { border-color: var(--uc-primary); }
+    .rag-chip.active { background: var(--uc-primary); color: var(--uc-white); border-color: var(--uc-primary); }
+
+    /* ── FILTER BAR ── */
+    .filter-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+    .filter-select {
+      border: 1px solid var(--uc-border); border-radius: 8px;
+      padding: 7px 12px; font-size: 13px; font-family: 'Roboto', sans-serif;
+      color: var(--uc-body-text); background: var(--uc-white); cursor: pointer; outline: none;
+    }
+    .filter-select:focus { border-color: var(--uc-primary); }
+    .search-input {
+      border: 1px solid var(--uc-border); border-radius: 8px;
+      padding: 7px 12px; font-size: 13px; font-family: 'Roboto', sans-serif;
+      color: var(--uc-body-text); background: var(--uc-white); outline: none; width: 200px;
+    }
+    .search-input:focus { border-color: var(--uc-primary); }
+    .ml-auto { margin-left: auto; }
+
+    /* ── BUTTONS ── */
+    .btn-primary {
+      background: var(--uc-primary); color: var(--uc-white); border: none;
+      border-radius: 8px; padding: 8px 16px; font-size: 13px;
+      font-family: 'Roboto', sans-serif; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn-primary:hover { background: var(--uc-primary-lt); }
+    .btn-outlined {
+      background: var(--uc-white); color: var(--uc-primary);
+      border: 1px solid var(--uc-primary); border-radius: 8px;
+      padding: 4px 10px; font-size: 12px; font-family: 'Roboto', sans-serif;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .btn-outlined:hover { background: #EBF5FC; }
+    .export-btn {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 6px 12px; border-radius: 8px;
+      border: 1px solid var(--uc-border); background: var(--uc-white);
+      font-size: 12px; color: var(--uc-secondary); cursor: pointer; font-family: 'Roboto', sans-serif;
+    }
+    .export-btn:hover { background: var(--uc-table-hdr); }
+
+    /* ── TABLE ── */
+    .uc-table-wrap { overflow-x: auto; border-radius: 8px; border: 1px solid var(--uc-border); }
+    .uc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .uc-table th {
+      background: var(--uc-table-hdr); font-weight: 700; font-size: 11px;
+      color: var(--uc-secondary); text-transform: uppercase; letter-spacing: 0.4px;
+      padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--uc-border); white-space: nowrap;
+    }
+    .uc-table td { padding: 10px 12px; border-bottom: 1px solid var(--uc-border); color: var(--uc-body-text); vertical-align: middle; }
+    .uc-table tr:last-child td { border-bottom: none; }
+    .uc-table tr:nth-child(even) td { background: var(--uc-row-alt); }
+    .uc-table tr:hover td { background: #EBF5FC; cursor: pointer; }
+
+    /* ── BADGES ── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 9px; border-radius: 4px; font-size: 11px;
+      font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .badge-green { background: var(--uc-success-bg); color: var(--uc-success); }
+    .badge-amber { background: #FFF8E1; color: #F57F17; }
+    .badge-red   { background: var(--uc-error-bg);   color: var(--uc-error); }
+    .badge-blue  { background: #E3F2FD; color: var(--uc-primary); }
+    .badge-grey  { background: #F5F5F5; color: var(--uc-secondary); }
+    .badge-dot   { width: 6px; height: 6px; border-radius: 50%; display: inline-block; }
+    .dot-green { background: var(--uc-success); }
+    .dot-amber { background: #F57F17; }
+    .dot-red   { background: var(--uc-error); }
+
+    /* ── WF CHIPS ── */
+    .wf-chip {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; margin: 1px;
+    }
+    .wf-chip-on  { background: #E3F2FD; color: var(--uc-primary); }
+    .wf-chip-off { background: #F5F5F5; color: #BDBDBD; }
+
+    /* ── PROGRESS BAR (onboarding) ── */
+    .mini-progress-wrap { background: #F0F0F0; border-radius: 10px; height: 6px; width: 80px; overflow: hidden; }
+    .mini-progress-bar  { height: 100%; border-radius: 10px; }
+
+    /* ── FEEDBACK SECTION ── */
+    .feedback-layout { display: grid; grid-template-columns: 420px 1fr; gap: 16px; }
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 11px; font-weight: 700; color: var(--uc-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+    .form-control {
+      width: 100%; border: 1px solid var(--uc-border); border-radius: 8px;
+      padding: 8px 12px; font-size: 13px; font-family: 'Roboto', sans-serif;
+      color: var(--uc-body-text); background: var(--uc-white); outline: none; transition: border-color 0.15s;
+    }
+    .form-control:focus { border-color: var(--uc-primary); }
+    textarea.form-control { resize: vertical; min-height: 80px; }
+    .star-row { display: flex; gap: 4px; }
+    .star { font-size: 24px; cursor: pointer; color: var(--uc-border); transition: color 0.15s; user-select: none; }
+    .star.lit { color: #F9A825; }
+    .feedback-type-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .fb-type-btn {
+      padding: 5px 12px; border-radius: 4px; border: 1px solid var(--uc-border);
+      background: var(--uc-white); font-size: 12px; cursor: pointer;
+      transition: all 0.15s; font-family: 'Roboto', sans-serif;
+    }
+    .fb-type-btn:hover { border-color: var(--uc-primary); color: var(--uc-primary); }
+    .fb-type-btn.active { background: var(--uc-primary); color: var(--uc-white); border-color: var(--uc-primary); }
+    .fb-tenant { font-weight: 700; font-size: 13px; }
+    .fb-stars { color: #F9A825; font-size: 12px; }
+    .fb-meta { font-size: 11px; color: var(--uc-secondary); }
+    .fb-text { font-size: 13px; color: var(--uc-body-text); line-height: 1.5; margin-top: 6px; }
+
+    /* ── TRAINING ── */
+    .training-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+    .training-card {
+      background: var(--uc-white); border: 1px solid var(--uc-border); border-radius: 8px;
+      overflow: hidden; cursor: pointer; transition: box-shadow 0.15s, transform 0.15s;
+    }
+    .training-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.12); transform: translateY(-1px); }
+    .training-card-banner { height: 72px; display: flex; align-items: center; justify-content: center; font-size: 30px; }
+    .training-card-body { padding: 12px; }
+    .training-card-title { font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+    .training-card-sub { font-size: 12px; color: var(--uc-secondary); margin-bottom: 9px; }
+    .training-progress-wrap { background: #F5F5F5; border-radius: 4px; height: 5px; overflow: hidden; margin-bottom: 4px; }
+    .training-progress-bar { height: 100%; border-radius: 4px; background: var(--uc-primary); }
+    .training-progress-label { font-size: 11px; color: var(--uc-secondary); }
+    .cheatsheet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .cheatsheet-card { background: var(--uc-white); border: 1px solid var(--uc-border); border-radius: 8px; padding: 14px; }
+    .cheatsheet-title { font-weight: 700; font-size: 13px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+    .cheatsheet-steps { list-style: none; }
+    .cheatsheet-step { display: flex; gap: 8px; padding: 5px 0; border-bottom: 1px solid #F5F5F5; font-size: 12px; }
+    .cheatsheet-step:last-child { border-bottom: none; }
+    .step-num {
+      width: 18px; height: 18px; border-radius: 50%; background: var(--uc-primary);
+      color: var(--uc-white); font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    /* ── PITCH & ROADMAP ── */
+    .pitch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+    .pitch-card { background: var(--uc-white); border: 1px solid var(--uc-border); border-radius: 8px; padding: 16px; }
+    .pitch-icon { font-size: 26px; margin-bottom: 8px; }
+    .pitch-title { font-weight: 700; font-size: 14px; margin-bottom: 5px; }
+    .pitch-body { font-size: 13px; color: var(--uc-secondary); line-height: 1.5; }
+    .pitch-stat { margin-top: 10px; font-size: 20px; font-weight: 700; color: var(--uc-primary); }
+    .pitch-stat-label { font-size: 11px; color: var(--uc-secondary); }
+    .roadmap-quarter { margin-bottom: 20px; }
+    .rq-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .rq-label { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 4px; text-transform: uppercase; color: #fff; }
+    .rq-label-past    { background: var(--uc-success); }
+    .rq-label-current { background: var(--uc-primary); }
+    .rq-label-future  { background: var(--uc-secondary); }
+    .rq-line { flex: 1; height: 1px; background: var(--uc-border); }
+    .rq-items { display: flex; gap: 10px; flex-wrap: wrap; }
+    .rq-item {
+      border: 1px solid var(--uc-border); border-radius: 8px; padding: 10px 14px;
+      background: var(--uc-white); display: flex; align-items: flex-start;
+      gap: 8px; flex: 1; min-width: 180px; max-width: 260px;
+    }
+    .rq-item-icon { font-size: 20px; flex-shrink: 0; }
+    .rq-item-title { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+    .rq-item-sub { font-size: 12px; color: var(--uc-secondary); line-height: 1.4; }
+    .rq-status-chip { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-top: 4px; text-transform: uppercase; }
+    .chip-shipped { background: var(--uc-success-bg); color: var(--uc-success); }
+    .chip-inprog  { background: #E3F2FD; color: var(--uc-primary); }
+    .chip-planned { background: #F5F5F5; color: var(--uc-secondary); }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; width: 340px;
+      background: #FAFAFA; border: 1px solid var(--uc-success);
+      border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+      padding: 14px 16px; display: flex; gap: 12px; z-index: 1000;
+      transform: translateY(80px); opacity: 0; transition: all 0.3s ease;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.error { border-color: var(--uc-error); background: var(--uc-error-bg); }
+    .toast-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .toast-title { font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+    .toast-body { font-size: 12px; color: var(--uc-secondary); }
+
+    /* ── SECTION TITLE ── */
+    .section-title { font-size: 15px; font-weight: 700; color: var(--uc-body-text); margin-bottom: 2px; }
+    .section-sub { font-size: 12px; color: var(--uc-secondary); margin-bottom: 14px; }
+    .last-updated { font-size: 11px; color: var(--uc-secondary); margin-bottom: 14px; }
+
+    /* ── LEGEND ── */
+    .legend { display: flex; gap: 12px; align-items: center; font-size: 12px; color: var(--uc-secondary); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--uc-border); border-radius: 3px; }
+
+    /* ── TENANT DETAIL DRAWER ── */
+    .drawer-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.3); z-index: 200;
+    }
+    .drawer-overlay.open { display: block; }
+    .drawer {
+      position: fixed; top: 0; right: -480px; width: 480px; height: 100%;
+      background: var(--uc-white); box-shadow: -4px 0 20px rgba(0,0,0,0.15);
+      z-index: 201; transition: right 0.3s ease;
+      display: flex; flex-direction: column;
+    }
+    .drawer.open { right: 0; }
+    .drawer-header {
+      padding: 16px 20px; border-bottom: 1px solid var(--uc-border);
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .drawer-header h3 { font-size: 15px; font-weight: 700; }
+    .drawer-close { font-size: 20px; cursor: pointer; color: var(--uc-secondary); background: none; border: none; }
+    .drawer-body { padding: 20px; overflow-y: auto; flex: 1; }
+    .drawer-section { margin-bottom: 20px; }
+    .drawer-section-title { font-size: 11px; font-weight: 700; color: var(--uc-secondary); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+    .drawer-kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .drawer-kpi {
+      background: #F9F9F9; border: 1px solid var(--uc-border);
+      border-radius: 8px; padding: 12px;
+    }
+    .drawer-kpi-label { font-size: 11px; color: var(--uc-secondary); margin-bottom: 4px; }
+    .drawer-kpi-value { font-size: 20px; font-weight: 700; }
+    .drawer-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #F5F5F5; font-size: 13px; }
+    .drawer-row:last-child { border-bottom: none; }
+    .drawer-row-label { color: var(--uc-secondary); }
+    .drawer-row-value { font-weight: 500; }
+    .timeline { position: relative; padding-left: 20px; }
+    .timeline::before { content: ''; position: absolute; left: 6px; top: 0; bottom: 0; width: 2px; background: var(--uc-border); }
+    .tl-item { position: relative; margin-bottom: 14px; font-size: 12px; }
+    .tl-dot { position: absolute; left: -17px; top: 3px; width: 10px; height: 10px; border-radius: 50%; background: var(--uc-primary); border: 2px solid white; box-shadow: 0 0 0 1px var(--uc-primary); }
+    .tl-dot.done { background: var(--uc-success); box-shadow: 0 0 0 1px var(--uc-success); }
+    .tl-dot.pending { background: var(--uc-border); box-shadow: 0 0 0 1px var(--uc-border); }
+    .tl-label { font-weight: 700; margin-bottom: 1px; }
+    .tl-sub { color: var(--uc-secondary); }
+  </style>
+</head>
+<body>
+
+<!-- ── GOOGLE AUTH OVERLAY ── Covers the entire page until the user signs in ── -->
+<div id="auth-overlay" style="position:fixed;inset:0;background:#F0F2F5;z-index:99999;display:flex;align-items:center;justify-content:center;font-family:'Roboto',sans-serif">
+  <div style="text-align:center;color:#9E9E9E;font-size:13px">Checking authentication…</div>
+</div>
+
+<!-- TOP NAV -->
+<nav class="top-nav">
+  <div class="top-nav__logo"><span class="logo-uni">uni</span><span class="logo-ware">ware</span></div>
+  <div class="top-nav__divider"></div>
+  <span class="top-nav__title">Handheld Adoption &amp; Training Hub</span>
+  <span class="top-nav__badge">Internal</span>
+  <div class="top-nav__spacer"></div>
+  <div id="nav-tf-status" style="font-size:11px;color:#757575;display:flex;align-items:center;gap:6px;margin-right:8px"></div>
+  <div id="nav-sheet-status" style="font-size:11px;color:#757575;display:flex;align-items:center;gap:4px;margin-right:8px;padding:3px 8px;background:#F5F5F5;border-radius:6px;border:1px solid var(--uc-border)"></div>
+  <div class="top-nav__actions">
+    <button class="nav-icon-btn" title="Export">⬇</button>
+    <button class="nav-icon-btn" title="Notifications">🔔</button>
+    <div class="avatar" title="Ashutosh Mishra">AM</div>
+  </div>
+</nav>
+
+<div class="app-body">
+  <!-- SIDEBAR — Feature Nav -->
+  <aside class="sidebar">
+    <div class="sidebar-section-label">HHD Picking</div>
+
+    <div class="feat-nav-item active" id="nav-b2c" onclick="switchFeature('b2c', this)">
+      <span class="feat-icon">📦</span>
+      <span>B2C Picking</span>
+      <span class="feat-nav-badge" style="background:rgba(74,147,74,0.3);color:#81C784">Under Takeoff</span>
+    </div>
+
+    <div class="feat-nav-item" id="nav-b2b" onclick="switchFeature('b2b', this)">
+      <span class="feat-icon">🏭</span>
+      <span>B2B Picking</span>
+      <span class="feat-nav-badge" style="background:rgba(74,147,74,0.3);color:#81C784">Under Takeoff</span>
+    </div>
+
+    <div class="feat-nav-divider"></div>
+    <div class="sidebar-section-label">Other Features</div>
+
+    <div class="feat-nav-item" id="nav-cc" onclick="switchFeature('cc', this)">
+      <span class="feat-icon">🔄</span>
+      <span>Cycle Count</span>
+      <span class="feat-nav-badge" style="background:rgba(245,127,23,0.25);color:#FFB74D">Beta UAT</span>
+    </div>
+
+    <div class="feat-nav-divider"></div>
+    <div class="sidebar-section-label">Upcoming</div>
+
+    <div class="feat-nav-item disabled">
+      <span class="feat-icon">📋</span>
+      <span>HHD Putaway</span>
+      <span class="feat-nav-badge" style="background:rgba(150,150,150,0.15);color:#757575">Upcoming</span>
+    </div>
+    <div class="feat-nav-item disabled">
+      <span class="feat-icon">📥</span>
+      <span>GRN / Inward</span>
+    </div>
+    <div class="feat-nav-item disabled">
+      <span class="feat-icon">📤</span>
+      <span>Dispatch</span>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main-content">
+    <div class="page-tabs" id="sub-tabs-bar">
+      <div class="page-tab active" onclick="switchSubTab(0,this)">📊 Adoption Summary</div>
+      <div class="page-tab" onclick="switchSubTab(1,this)">📋 Tenant Adoption Details</div>
+      <div class="page-tab" onclick="switchSubTab(2,this)">🎓 CSM Training Hub</div>
+      <div class="page-tab" onclick="switchSubTab(3,this)">🚀 Pitch &amp; Roadmap</div>
+    </div>
+
+    <div class="scroll-area">
+
+    <!-- ╔══════════════════════════════════════════╗ -->
+    <!-- ║  FEATURE: B2C PICKING                    ║ -->
+    <!-- ╚══════════════════════════════════════════╝ -->
+    <div class="feat-panel active" id="feat-b2c">
+
+      <!-- ══════════════════════════════════════════════════
+           B2C — SUB-TAB 1: ADOPTION SUMMARY
+      ══════════════════════════════════════════════════ -->
+      <div class="section-panel active" id="b2c-panel-0">
+
+        <div class="section-title">B2C Picking — Adoption Tracker</div>
+
+        <!-- Sheet-driven adoption summary (auto-populated from Google Sheet) -->
+        <div id="b2c-sheet-summary" style="margin-bottom:20px">
+          <div style="background:var(--uc-white);border:1px solid var(--uc-border);border-radius:8px;padding:22px;text-align:center;color:var(--uc-secondary);font-size:13px">
+            ⏳ Loading live data from Google Sheet…
+          </div>
+        </div>
+
+        <!-- B2C TREND CHART -->
+        <!-- B2C ADOPTION TREND -->
+        <div class="card" style="margin-bottom:0">
+          <div class="card-header">
+            <h3>🚀 Started — Adoption Trend</h3>
+            <div style="display:flex;gap:6px">
+              <button id="b2c-trend-btn-week"  class="btn-outlined" style="font-size:11px;padding:3px 10px;background:#1F87C2;color:#fff;border-color:#1F87C2" onclick="renderAdoptionTrend('b2c','week',this)">Weekly</button>
+              <button id="b2c-trend-btn-month" class="btn-outlined" style="font-size:11px;padding:3px 10px" onclick="renderAdoptionTrend('b2c','month',this)">Monthly</button>
+            </div>
+          </div>
+          <div class="card-body" id="b2c-trend-body" style="padding-top:8px">
+            <div style="text-align:center;color:var(--uc-secondary);padding:20px;font-size:13px">Loading…</div>
+          </div>
+        </div>
+
+      </div><!-- /b2c-panel-0 -->
+
+
+      <!-- ══════════════════════════════════════════════════
+           B2C — SUB-TAB 2: TENANT ADOPTION DETAILS
+      ══════════════════════════════════════════════════ -->
+      <div class="section-panel" id="b2c-panel-1">
+        <div class="section-title">B2C Picking — Tenant Adoption Details</div>
+        <div class="section-sub">Full list of tracked B2C tenants and facilities. Click 📋 Details on any row to view adoption journey.</div>
+
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+          <div class="rag-chips" style="margin-bottom:0">
+            <div class="rag-chip active" onclick="filterB2C('all',this)">All</div>
+            <div class="rag-chip" onclick="filterB2C('active',this)">✅ Active</div>
+            <div class="rag-chip" onclick="filterB2C('inactive',this)">⚫ Inactive</div>
+            <div class="rag-chip" onclick="filterB2C('new',this)">🆕 New (7 days)</div>
+          </div>
+          <button class="export-btn" style="margin-left:auto" onclick="exportCSV('b2c')">📥 Export CSV</button>
+        </div>
+        <div class="filter-bar">
+          <input class="search-input" placeholder="🔍  Search tenant or facility…" oninput="searchB2C(this.value)">
+          <span id="b2c-count" style="font-size:12px;color:var(--uc-secondary);margin-left:4px"></span>
+        </div>
+        <div id="b2c-suggest"></div>
+        <div class="uc-table-wrap">
+          <table class="uc-table">
+            <thead>
+              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th>CSM</th><th>DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
+            </thead>
+            <tbody id="b2c-tbody"></tbody>
+          </table>
+        </div>
+      </div><!-- /b2c-panel-1 -->
+
+
+      <!-- ══════════════════════════════════════════════════
+           B2C — SUB-TAB 3: CSM TRAINING HUB
+      ══════════════════════════════════════════════════ -->
+      <div class="section-panel" id="b2c-panel-2">
+        <div class="section-title">CSM Training Hub</div>
+        <div class="section-sub">Resources, cheat sheets, and objection handling scripts to drive handheld adoption</div>
+        <div style="font-size:11px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Training Modules</div>
+        <div class="training-grid">
+          <div class="training-card" onclick="openModule('B2C Picking on Handheld')">
+            <div class="training-card-banner" style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB)">📦</div>
+            <div class="training-card-body">
+              <div class="training-card-title">B2C Picking on Handheld</div>
+              <div class="training-card-sub">Full B2C pick flow, error handling, and edge cases</div>
+              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:85%"></div></div>
+              <div class="training-progress-label">85% of CSMs completed · 4 modules</div>
+            </div>
+          </div>
+          <div class="training-card" onclick="openModule('B2B Picking + HU Flow')">
+            <div class="training-card-banner" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9)">🏭</div>
+            <div class="training-card-body">
+              <div class="training-card-title">B2B Picking + HU Flow</div>
+              <div class="training-card-sub">Handling Unit activation, pre-pack config, B2B packing validation</div>
+              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:60%;background:#4A934A"></div></div>
+              <div class="training-progress-label">60% of CSMs completed · 5 modules</div>
+            </div>
+          </div>
+          <div class="training-card" onclick="openModule('Cycle Count via Handheld')">
+            <div class="training-card-banner" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2)">🔄</div>
+            <div class="training-card-body">
+              <div class="training-card-title">Cycle Count via Handheld</div>
+              <div class="training-card-sub">Initiating, scanning, and closing a cycle count from the app</div>
+              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:45%;background:#F57F17"></div></div>
+              <div class="training-progress-label">45% of CSMs completed · 3 modules</div>
+            </div>
+          </div>
+          <div class="training-card" onclick="openModule('GRN & Inward on Handheld')">
+            <div class="training-card-banner" style="background:linear-gradient(135deg,#F3E5F5,#E1BEE7)">📥</div>
+            <div class="training-card-body">
+              <div class="training-card-title">GRN &amp; Inward on Handheld</div>
+              <div class="training-card-sub">Receiving goods, tag printing, traceability handling on device</div>
+              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:70%;background:#9C27B0"></div></div>
+              <div class="training-progress-label">70% of CSMs completed · 3 modules</div>
+            </div>
+          </div>
+          <div class="training-card" onclick="openModule('Objection Handling Playbook')">
+            <div class="training-card-banner" style="background:linear-gradient(135deg,#FCE4EC,#F8BBD0)">🎯</div>
+            <div class="training-card-body">
+              <div class="training-card-title">Objection Handling Playbook</div>
+              <div class="training-card-sub">Respond to common client pushbacks on handheld adoption</div>
+              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:90%;background:#E91E63"></div></div>
+              <div class="training-progress-label">90% of CSMs completed · 2 modules</div>
+            </div>
+          </div>
+          <div class="training-card" onclick="openModule('Demo Script & Sandbox')">
+            <div class="training-card-banner" style="background:linear-gradient(135deg,#E0F7FA,#B2EBF2)">🎥</div>
+            <div class="training-card-body">
+              <div class="training-card-title">Demo Script &amp; Sandbox</div>
+              <div class="training-card-sub">Run a live demo for clients using the sandbox environment</div>
+              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:55%;background:#00ACC1"></div></div>
+              <div class="training-progress-label">55% of CSMs completed · 2 modules</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Quick Reference Cheat Sheets</div>
+        <div class="cheatsheet-grid">
+          <div class="cheatsheet-card">
+            <div class="cheatsheet-title">📦 B2C Pick Flow</div>
+            <ul class="cheatsheet-steps">
+              <li class="cheatsheet-step"><span class="step-num">1</span><span>Open HH app → Login with WH credentials</span></li>
+              <li class="cheatsheet-step"><span class="step-num">2</span><span>Go to <b>Picking</b> → Select <b>B2C Picklist</b></span></li>
+              <li class="cheatsheet-step"><span class="step-num">3</span><span>Scan Picklist barcode or enter ID manually</span></li>
+              <li class="cheatsheet-step"><span class="step-num">4</span><span>App navigates to first shelf — go to location</span></li>
+              <li class="cheatsheet-step"><span class="step-num">5</span><span>Scan shelf barcode → scan item SKU → confirm qty</span></li>
+              <li class="cheatsheet-step"><span class="step-num">6</span><span>Repeat for all items → Mark picklist as <b>Picked</b></span></li>
+            </ul>
+          </div>
+          <div class="cheatsheet-card">
+            <div class="cheatsheet-title">🔄 Cycle Count Flow</div>
+            <ul class="cheatsheet-steps">
+              <li class="cheatsheet-step"><span class="step-num">1</span><span>Go to <b>Inventory</b> → <b>Cycle Count</b> on HH app</span></li>
+              <li class="cheatsheet-step"><span class="step-num">2</span><span>Select assigned count task or scan shelf barcode</span></li>
+              <li class="cheatsheet-step"><span class="step-num">3</span><span>Scan each item — app records vs. system qty</span></li>
+              <li class="cheatsheet-step"><span class="step-num">4</span><span>Discrepancies shown in red — confirm or flag</span></li>
+              <li class="cheatsheet-step"><span class="step-num">5</span><span>Mark count <b>Complete</b> → submitted for WH Manager review</span></li>
+              <li class="cheatsheet-step"><span class="step-num">6</span><span>WH Manager approves → inventory reconciled</span></li>
+            </ul>
+          </div>
+          <div class="cheatsheet-card">
+            <div class="cheatsheet-title">🎯 Top 5 Objection Responses</div>
+            <ul class="cheatsheet-steps">
+              <li class="cheatsheet-step"><span class="step-num">1</span><span><b>"App is slow"</b> → Check WiFi. Zebra TC21+ recommended. Offline mode available.</span></li>
+              <li class="cheatsheet-step"><span class="step-num">2</span><span><b>"Pickers won't learn it"</b> → 15-min onboarding video. Pick flow is 6 taps — demo it live.</span></li>
+              <li class="cheatsheet-step"><span class="step-num">3</span><span><b>"We use paper"</b> → Lead with error rate reduction data (avg 70% drop in mispicks).</span></li>
+              <li class="cheatsheet-step"><span class="step-num">4</span><span><b>"Devices not compatible"</b> → App works on Android 8+. Share device compatibility matrix.</span></li>
+              <li class="cheatsheet-step"><span class="step-num">5</span><span><b>"Next quarter"</b> → Offer 2-week pilot with 1 zone + dedicated support.</span></li>
+            </ul>
+          </div>
+          <div class="cheatsheet-card">
+            <div class="cheatsheet-title">📋 CSM Adoption Drive Checklist</div>
+            <ul class="cheatsheet-steps">
+              <li class="cheatsheet-step"><span class="step-num">✓</span><span>Share app download link &amp; device requirements doc</span></li>
+              <li class="cheatsheet-step"><span class="step-num">✓</span><span>Schedule WH walkthrough with Ops Lead</span></li>
+              <li class="cheatsheet-step"><span class="step-num">✓</span><span>Conduct live demo on sandbox with actual SKUs</span></li>
+              <li class="cheatsheet-step"><span class="step-num">✓</span><span>Set up pilot: 1 section, 1 workflow first</span></li>
+              <li class="cheatsheet-step"><span class="step-num">✓</span><span>Review first-week metrics with client</span></li>
+              <li class="cheatsheet-step"><span class="step-num">✓</span><span>Collect feedback and escalate bugs immediately</span></li>
+            </ul>
+          </div>
+        </div>
+      </div><!-- /b2c-panel-2 -->
+
+
+      <!-- ══════════════════════════════════════════════════
+           B2C — SUB-TAB 4: PITCH & ROADMAP
+      ══════════════════════════════════════════════════ -->
+      <div class="section-panel" id="b2c-panel-3">
+        <div class="section-title">Pitch Points &amp; Product Roadmap</div>
+        <div class="section-sub">Talking points for clients and prospects · Roadmap visible to all stakeholders</div>
+        <div style="font-size:11px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Why Switch to Handheld?</div>
+        <div class="pitch-grid">
+          <div class="pitch-card"><div class="pitch-icon">⚡</div><div class="pitch-title">2× Faster Picking</div><div class="pitch-body">System-directed navigation eliminates aisle-wandering. Pickers follow the optimal route suggested by the app.</div><div class="pitch-stat">~50%<div class="pitch-stat-label">avg reduction in pick time</div></div></div>
+          <div class="pitch-card"><div class="pitch-icon">🎯</div><div class="pitch-title">Near-Zero Mispicks</div><div class="pitch-body">Barcode scan validation at every step prevents wrong-item picks. System rejects mismatches instantly.</div><div class="pitch-stat">~70%<div class="pitch-stat-label">drop in mispick rate (avg across tenants)</div></div></div>
+          <div class="pitch-card"><div class="pitch-icon">📡</div><div class="pitch-title">Works Offline</div><div class="pitch-body">Picking tasks sync to device before the shift. Pickers work even during WiFi outages — data syncs on reconnect.</div><div class="pitch-stat">100%<div class="pitch-stat-label">uptime in low-connectivity zones</div></div></div>
+          <div class="pitch-card"><div class="pitch-icon">📦</div><div class="pitch-title">HU-Based Bulk Picking</div><div class="pitch-body">B2B pickers activate Handling Units on the fly. Pick entire cartons at once — faster for bulk orders.</div><div class="pitch-stat">HU MVP<div class="pitch-stat-label">Live now for B2B channels</div></div></div>
+          <div class="pitch-card"><div class="pitch-icon">🔄</div><div class="pitch-title">Cycle Counts — No Shutdowns</div><div class="pitch-body">Rolling cycle counts zone-by-zone without stopping operations. Discrepancies flagged instantly.</div><div class="pitch-stat">Real-time<div class="pitch-stat-label">inventory reconciliation</div></div></div>
+          <div class="pitch-card"><div class="pitch-icon">📊</div><div class="pitch-title">Picker Productivity Tracking</div><div class="pitch-body">Every pick is timestamped and linked to the picker. Managers get real-time visibility into performance.</div><div class="pitch-stat">Per-user<div class="pitch-stat-label">performance analytics in WMS</div></div></div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 10px">Product Roadmap — Handheld App</div>
+        <div class="card"><div class="card-body">
+          <div class="roadmap-quarter">
+            <div class="rq-header"><div class="rq-label rq-label-past">✓ Q1 2026 — Shipped</div><div class="rq-line"></div></div>
+            <div class="rq-items">
+              <div class="rq-item"><div class="rq-item-icon">📱</div><div><div class="rq-item-title">Handheld App v1.0</div><div class="rq-item-sub">B2C picking, GRN, putaway on Android</div><span class="rq-status-chip chip-shipped">Shipped</span></div></div>
+              <div class="rq-item"><div class="rq-item-icon">🔄</div><div><div class="rq-item-title">Cycle Count on HH</div><div class="rq-item-sub">Shelf-level scan with real-time discrepancy detection</div><span class="rq-status-chip chip-shipped">Shipped</span></div></div>
+              <div class="rq-item"><div class="rq-item-icon">📡</div><div><div class="rq-item-title">Offline Mode</div><div class="rq-item-sub">Pick tasks work without internet; auto-sync on reconnect</div><span class="rq-status-chip chip-shipped">Shipped</span></div></div>
+            </div>
+          </div>
+          <div class="roadmap-quarter">
+            <div class="rq-header"><div class="rq-label rq-label-current">⚙ Q2 2026 — In Progress</div><div class="rq-line"></div></div>
+            <div class="rq-items">
+              <div class="rq-item" style="border-color:#1F87C2"><div class="rq-item-icon">📦</div><div><div class="rq-item-title">HU-Based B2B Picking</div><div class="rq-item-sub">HU activation during picking; pre-pack carton workflow</div><span class="rq-status-chip chip-inprog">In Progress</span></div></div>
+              <div class="rq-item" style="border-color:#1F87C2"><div class="rq-item-icon">📥</div><div><div class="rq-item-title">HU GRN on Handheld</div><div class="rq-item-sub">Scan entire pallets/cartons at inward stage</div><span class="rq-status-chip chip-inprog">In Progress</span></div></div>
+              <div class="rq-item" style="border-color:#1F87C2"><div class="rq-item-icon">🔢</div><div><div class="rq-item-title">Batch Capture at GRN</div><div class="rq-item-sub">Capture expiry/batch ID directly on HH at inward</div><span class="rq-status-chip chip-inprog">In Progress</span></div></div>
+            </div>
+          </div>
+          <div class="roadmap-quarter">
+            <div class="rq-header"><div class="rq-label rq-label-future">Q3 2026 — Planned</div><div class="rq-line"></div></div>
+            <div class="rq-items">
+              <div class="rq-item"><div class="rq-item-icon">🔊</div><div><div class="rq-item-title">Voice-Guided Picking</div><div class="rq-item-sub">Audio prompts for shelf and SKU — hands-free</div><span class="rq-status-chip chip-planned">Planned</span></div></div>
+              <div class="rq-item"><div class="rq-item-icon">↩</div><div><div class="rq-item-title">Returns via Handheld</div><div class="rq-item-sub">RTO and customer return processing on HH</div><span class="rq-status-chip chip-planned">Planned</span></div></div>
+              <div class="rq-item"><div class="rq-item-icon">🧩</div><div><div class="rq-item-title">Cluster Picking — B2B</div><div class="rq-item-sub">Pick multiple orders into separate HUs in one trip</div><span class="rq-status-chip chip-planned">Planned</span></div></div>
+            </div>
+          </div>
+          <div class="roadmap-quarter">
+            <div class="rq-header"><div class="rq-label rq-label-future">Q4 2026 — Future</div><div class="rq-line"></div></div>
+            <div class="rq-items">
+              <div class="rq-item"><div class="rq-item-icon">📡</div><div><div class="rq-item-title">RFID Integration</div><div class="rq-item-sub">Bulk scan racks/pallets via RFID-enabled handhelds</div><span class="rq-status-chip chip-planned">Future</span></div></div>
+              <div class="rq-item"><div class="rq-item-icon">🤖</div><div><div class="rq-item-title">AI Pick Path Optimisation</div><div class="rq-item-sub">ML-powered optimal pick route based on WH layout</div><span class="rq-status-chip chip-planned">Future</span></div></div>
+            </div>
+          </div>
+        </div></div>
+      </div><!-- /b2c-panel-3 -->
+
+    </div><!-- /feat-b2c -->
+
+
+    <!-- ╔══════════════════════════════════════════╗ -->
+    <!-- ║  FEATURE: B2B PICKING                    ║ -->
+    <!-- ╚══════════════════════════════════════════╝ -->
+    <div class="feat-panel" id="feat-b2b">
+
+      <!-- B2B — SUB-TAB 1: ADOPTION SUMMARY -->
+      <div class="section-panel active" id="b2b-panel-0">
+        <div class="section-title">B2B Picking — Adoption Tracker</div>
+
+        <!-- Sheet-driven adoption summary (auto-populated from Google Sheet) -->
+        <div id="b2b-sheet-summary" style="margin-bottom:20px">
+          <div style="background:var(--uc-white);border:1px solid var(--uc-border);border-radius:8px;padding:22px;text-align:center;color:var(--uc-secondary);font-size:13px">
+            ⏳ Loading live data from Google Sheet…
+          </div>
+        </div>
+
+        <!-- B2B TREND CHART -->
+        <!-- B2B ADOPTION TREND -->
+        <div class="card" style="margin-bottom:0">
+          <div class="card-header">
+            <h3>🚀 Started — Adoption Trend</h3>
+            <div style="display:flex;gap:6px">
+              <button id="b2b-trend-btn-week"  class="btn-outlined" style="font-size:11px;padding:3px 10px;background:#4A934A;color:#fff;border-color:#4A934A" onclick="renderAdoptionTrend('b2b','week',this)">Weekly</button>
+              <button id="b2b-trend-btn-month" class="btn-outlined" style="font-size:11px;padding:3px 10px" onclick="renderAdoptionTrend('b2b','month',this)">Monthly</button>
+            </div>
+          </div>
+          <div class="card-body" id="b2b-trend-body" style="padding-top:8px">
+            <div style="text-align:center;color:var(--uc-secondary);padding:20px;font-size:13px">Loading…</div>
+          </div>
+        </div>
+
+      </div><!-- /b2b-panel-0 -->
+
+      <!-- ══════════════════════════════════════════════════
+           B2B — SUB-TAB 2: TENANT ADOPTION DETAILS
+      ══════════════════════════════════════════════════ -->
+      <div class="section-panel" id="b2b-panel-1">
+        <div class="section-title">B2B Picking — Tenant Adoption Details</div>
+        <div class="section-sub">Full list of tracked B2B tenants and facilities. Click 📋 Details on any row to view adoption journey.</div>
+
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+          <div class="rag-chips" style="margin-bottom:0">
+            <div class="rag-chip active" onclick="filterB2B('all',this)">All</div>
+            <div class="rag-chip" onclick="filterB2B('active',this)">✅ Active</div>
+            <div class="rag-chip" onclick="filterB2B('inactive',this)">⚫ Inactive</div>
+            <div class="rag-chip" onclick="filterB2B('new',this)">🆕 New (7 days)</div>
+          </div>
+          <button class="export-btn" style="margin-left:auto" onclick="exportCSV('b2b')">📥 Export CSV</button>
+        </div>
+        <div class="filter-bar">
+          <input class="search-input" placeholder="🔍  Search tenant or facility…" oninput="searchB2B(this.value)">
+          <span id="b2b-count" style="font-size:12px;color:var(--uc-secondary);margin-left:4px"></span>
+        </div>
+        <div id="b2b-suggest"></div>
+        <div class="uc-table-wrap">
+          <table class="uc-table">
+            <thead>
+              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th>CSM</th><th>DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
+            </thead>
+            <tbody id="b2b-tbody"></tbody>
+          </table>
+        </div>
+      </div><!-- /b2b-panel-1 -->
+
+      <!-- B2B — SUB-TAB 3: TRAINING -->
+      <div class="section-panel" id="b2b-panel-2">
+        <div class="section-title">B2B Picking — CSM Training Hub</div>
+        <div class="section-sub">Resources and scripts to drive B2B HH picking adoption</div>
+        <div class="training-grid">
+          <div class="training-card" onclick="openModule('B2B Picking + HU Flow')">
+            <div class="training-card-banner" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9)">🏭</div>
+            <div class="training-card-body">
+              <div class="training-card-title">B2B Picking + HU Flow</div>
+              <div class="training-card-sub">Handling Unit activation, pre-pack config, B2B packing validation</div>
+              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:60%;background:#4A934A"></div></div>
+              <div class="training-progress-label">60% of CSMs completed · 5 modules</div>
+            </div>
+          </div>
+          <div class="training-card" onclick="openModule('Objection Handling — B2B')">
+            <div class="training-card-banner" style="background:linear-gradient(135deg,#FCE4EC,#F8BBD0)">🎯</div>
+            <div class="training-card-body">
+              <div class="training-card-title">Objection Handling — B2B</div>
+              <div class="training-card-sub">How to pitch HU-based picking to ops leads at B2B clients</div>
+              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:75%;background:#E91E63"></div></div>
+              <div class="training-progress-label">75% of CSMs completed · 2 modules</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 10px">B2B Pick Flow Cheat Sheet</div>
+        <div class="cheatsheet-grid">
+          <div class="cheatsheet-card">
+            <div class="cheatsheet-title">🏭 B2B Pick + HU Flow</div>
+            <ul class="cheatsheet-steps">
+              <li class="cheatsheet-step"><span class="step-num">1</span><span>Open HH app → Login → Go to <b>B2B Picking</b></span></li>
+              <li class="cheatsheet-step"><span class="step-num">2</span><span>Select picklist → Activate <b>Handling Unit</b></span></li>
+              <li class="cheatsheet-step"><span class="step-num">3</span><span>Scan carton barcode to map items to HU</span></li>
+              <li class="cheatsheet-step"><span class="step-num">4</span><span>Pick all items into HU — app validates qty</span></li>
+              <li class="cheatsheet-step"><span class="step-num">5</span><span>Seal and label HU → confirm completion</span></li>
+              <li class="cheatsheet-step"><span class="step-num">6</span><span>Move HU to dispatch staging area</span></li>
+            </ul>
+          </div>
+          <div class="cheatsheet-card">
+            <div class="cheatsheet-title">🎯 B2B Objection Responses</div>
+            <ul class="cheatsheet-steps">
+              <li class="cheatsheet-step"><span class="step-num">1</span><span><b>"HU setup is complex"</b> → One-time config. Template reuse after first setup. Demo it live.</span></li>
+              <li class="cheatsheet-step"><span class="step-num">2</span><span><b>"We bulk-pick manually"</b> → HU-based picking is same speed, zero carton mismatch errors.</span></li>
+              <li class="cheatsheet-step"><span class="step-num">3</span><span><b>"Pickers prefer desktops"</b> → 15-min training. Same flow they know — just on handheld.</span></li>
+            </ul>
+          </div>
+        </div>
+      </div><!-- /b2b-panel-2 -->
+
+      <!-- B2B — SUB-TAB 4: PITCH -->
+      <div class="section-panel" id="b2b-panel-3">
+        <div class="section-title">B2B Picking — Pitch Points</div>
+        <div class="section-sub">Talking points for selling B2B HH picking to clients</div>
+        <div class="pitch-grid">
+          <div class="pitch-card"><div class="pitch-icon">📦</div><div class="pitch-title">HU-Based Bulk Picking</div><div class="pitch-body">Activate Handling Units on the fly. Pick entire cartons in one scan — purpose-built for B2B bulk orders.</div><div class="pitch-stat">HU MVP<div class="pitch-stat-label">Live now for B2B channels</div></div></div>
+          <div class="pitch-card"><div class="pitch-icon">⚡</div><div class="pitch-title">Faster Pick Cycles</div><div class="pitch-body">System-directed route + HU activation cuts per-order pick time significantly vs. paper-based flow.</div><div class="pitch-stat">~40%<div class="pitch-stat-label">reduction in B2B pick time (avg)</div></div></div>
+          <div class="pitch-card"><div class="pitch-icon">🎯</div><div class="pitch-title">Zero Carton Mismatch</div><div class="pitch-body">Barcode validation at HU sealing catches wrong items before they leave the warehouse.</div><div class="pitch-stat">~65%<div class="pitch-stat-label">drop in carton mismatch errors</div></div></div>
+          <div class="pitch-card"><div class="pitch-icon">📊</div><div class="pitch-title">Picker Productivity Tracking</div><div class="pitch-body">Every pick is timestamped and linked to the picker. Managers get real-time visibility into B2B fulfilment performance.</div><div class="pitch-stat">Per-user<div class="pitch-stat-label">analytics in WMS dashboard</div></div></div>
+        </div>
+      </div><!-- /b2b-panel-3 -->
+
+    </div><!-- /feat-b2b -->
+
+
+    <!-- ╔══════════════════════════════════════════╗ -->
+    <!-- ║  FEATURE: CYCLE COUNT                    ║ -->
+    <!-- ╚══════════════════════════════════════════╝ -->
+    <div class="feat-panel" id="feat-cc">
+
+      <!-- SUB-TAB 1 — CC ADOPTION SUMMARY -->
+      <div class="section-panel active" id="cc-panel-0">
+        <div class="section-title">Cycle Count — Adoption Tracker</div>
+
+        <!-- Sheet-driven adoption summary (auto-populated from Google Sheet) -->
+        <div id="cc-sheet-summary" style="margin-bottom:20px">
+          <div style="background:var(--uc-white);border:1px solid var(--uc-border);border-radius:8px;padding:22px;text-align:center;color:var(--uc-secondary);font-size:13px">
+            ⏳ Loading live data from Google Sheet…
+          </div>
+        </div>
+
+        <!-- CC TREND CHART -->
+        <!-- CC ADOPTION TREND -->
+        <div class="card" style="margin-bottom:0">
+          <div class="card-header">
+            <h3>🚀 Started — Adoption Trend</h3>
+            <div style="display:flex;gap:6px">
+              <button id="cc-trend-btn-week"  class="btn-outlined" style="font-size:11px;padding:3px 10px;background:#9C27B0;color:#fff;border-color:#9C27B0" onclick="renderAdoptionTrend('cc','week',this)">Weekly</button>
+              <button id="cc-trend-btn-month" class="btn-outlined" style="font-size:11px;padding:3px 10px" onclick="renderAdoptionTrend('cc','month',this)">Monthly</button>
+            </div>
+          </div>
+          <div class="card-body" id="cc-trend-body" style="padding-top:8px">
+            <div style="text-align:center;color:var(--uc-secondary);padding:20px;font-size:13px">Loading…</div>
+          </div>
+        </div>
+
+      </div><!-- /cc-panel-0 -->
+
+      <!-- ══════════════════════════════════════════════════
+           CC — SUB-TAB 2: TENANT ADOPTION DETAILS
+      ══════════════════════════════════════════════════ -->
+      <div class="section-panel" id="cc-panel-1">
+        <div class="section-title">Cycle Count — Tenant Adoption Details</div>
+        <div class="section-sub">Full list of tracked Cycle Count tenants and facilities. Click 📋 Details on any row to view adoption journey.</div>
+
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+          <div class="rag-chips" style="margin-bottom:0">
+            <div class="rag-chip active" onclick="filterCC('all',this)">All</div>
+            <div class="rag-chip" onclick="filterCC('active',this)">✅ Active</div>
+            <div class="rag-chip" onclick="filterCC('inactive',this)">⚫ Inactive</div>
+            <div class="rag-chip" onclick="filterCC('new',this)">🆕 New (7 days)</div>
+          </div>
+          <button class="export-btn" style="margin-left:auto" onclick="exportCSV('cc')">📥 Export CSV</button>
+        </div>
+        <div class="filter-bar">
+          <input class="search-input" placeholder="🔍  Search tenant or facility…" oninput="searchCC(this.value)">
+          <span id="cc-count" style="font-size:12px;color:var(--uc-secondary);margin-left:4px"></span>
+        </div>
+        <div id="cc-suggest"></div>
+        <div class="uc-table-wrap">
+          <table class="uc-table">
+            <thead>
+              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th>CSM</th><th>DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
+            </thead>
+            <tbody id="cc-tbody"></tbody>
+          </table>
+        </div>
+      </div><!-- /cc-panel-1 -->
+
+      <!-- SUB-TAB 3 — CC TRAINING -->
+      <div class="section-panel" id="cc-panel-2">
+        <div class="section-title">Cycle Count — CSM Training Hub</div>
+        <div class="section-sub">Resources and cheat sheets to drive Cycle Count adoption</div>
+        <div class="training-grid">
+          <div class="training-card" onclick="openModule('Cycle Count via Handheld')">
+            <div class="training-card-banner" style="background:linear-gradient(135deg,#F3E5F5,#E1BEE7)">🔄</div>
+            <div class="training-card-body">
+              <div class="training-card-title">Cycle Count via Handheld</div>
+              <div class="training-card-sub">Initiating, scanning, and closing a cycle count from the app</div>
+              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:45%;background:#9C27B0"></div></div>
+              <div class="training-progress-label">45% of CSMs completed · 3 modules</div>
+            </div>
+          </div>
+          <div class="training-card" onclick="openModule('Objection Handling — CC')">
+            <div class="training-card-banner" style="background:linear-gradient(135deg,#FCE4EC,#F8BBD0)">🎯</div>
+            <div class="training-card-body">
+              <div class="training-card-title">Objection Handling — CC</div>
+              <div class="training-card-sub">Why clients resist cycle count digitisation and how to respond</div>
+              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:60%;background:#E91E63"></div></div>
+              <div class="training-progress-label">60% of CSMs completed · 2 modules</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin:16px 0 10px">Cycle Count Cheat Sheet</div>
+        <div class="cheatsheet-grid">
+          <div class="cheatsheet-card">
+            <div class="cheatsheet-title">🔄 Cycle Count Flow</div>
+            <ul class="cheatsheet-steps">
+              <li class="cheatsheet-step"><span class="step-num">1</span><span>Go to <b>Inventory</b> → <b>Cycle Count</b> on HH app</span></li>
+              <li class="cheatsheet-step"><span class="step-num">2</span><span>Select assigned count task or scan shelf barcode</span></li>
+              <li class="cheatsheet-step"><span class="step-num">3</span><span>Scan each item — app records vs. system qty</span></li>
+              <li class="cheatsheet-step"><span class="step-num">4</span><span>Discrepancies shown in red — confirm or flag</span></li>
+              <li class="cheatsheet-step"><span class="step-num">5</span><span>Mark count <b>Complete</b> → submitted for WH Manager review</span></li>
+              <li class="cheatsheet-step"><span class="step-num">6</span><span>WH Manager approves → inventory reconciled</span></li>
+            </ul>
+          </div>
+          <div class="cheatsheet-card">
+            <div class="cheatsheet-title">🎯 CC Objection Responses</div>
+            <ul class="cheatsheet-steps">
+              <li class="cheatsheet-step"><span class="step-num">1</span><span><b>"We do count weekly"</b> → Rolling daily counts reduce shutdown time. No need to stop ops.</span></li>
+              <li class="cheatsheet-step"><span class="step-num">2</span><span><b>"Too many discrepancies"</b> → That's the point — catch them before audit. Average 40% reduction in inventory write-offs.</span></li>
+              <li class="cheatsheet-step"><span class="step-num">3</span><span><b>"Staff won't adapt"</b> → 10-min training. Interface is same scan-and-confirm as picking.</span></li>
+            </ul>
+          </div>
+        </div>
+      </div><!-- /cc-panel-2 -->
+
+      <!-- SUB-TAB 4 — CC PITCH -->
+      <div class="section-panel" id="cc-panel-3">
+        <div class="section-title">Cycle Count — Pitch Points</div>
+        <div class="section-sub">Talking points for selling Cycle Count on handheld to clients</div>
+        <div class="pitch-grid">
+          <div class="pitch-card"><div class="pitch-icon">🔄</div><div class="pitch-title">No Operational Shutdown</div><div class="pitch-body">Rolling zone-by-zone counts happen during live operations. No need to freeze the warehouse.</div><div class="pitch-stat">Zero downtime<div class="pitch-stat-label">vs. traditional quarterly count</div></div></div>
+          <div class="pitch-card"><div class="pitch-icon">⚡</div><div class="pitch-title">Real-Time Discrepancy Detection</div><div class="pitch-body">System highlights mismatches the moment a scan conflicts with expected qty — no manual comparison.</div><div class="pitch-stat">Instant<div class="pitch-stat-label">vs. days of manual reconciliation</div></div></div>
+          <div class="pitch-card"><div class="pitch-icon">📊</div><div class="pitch-title">Inventory Accuracy ↑</div><div class="pitch-body">Clients report significant improvement in fill rate and SLA compliance after adopting digital cycle counts.</div><div class="pitch-stat">~40%<div class="pitch-stat-label">reduction in inventory write-offs (avg)</div></div></div>
+          <div class="pitch-card"><div class="pitch-icon">🔒</div><div class="pitch-title">Audit-Ready Records</div><div class="pitch-body">Every count session is timestamped, linked to the counter, and approved by WH Manager — full traceability.</div><div class="pitch-stat">100%<div class="pitch-stat-label">digital audit trail</div></div></div>
+        </div>
+      </div><!-- /cc-panel-3 -->
+
+    </div><!-- /feat-cc -->
+
+
+
+
+    </div><!-- /scroll-area -->
+  </div><!-- /main-content -->
+</div><!-- /app-body -->
+
+<!-- ── TENANT DETAILS FLYOUT ── -->
+<div class="entry-flyout-overlay" id="details-flyout-overlay" onclick="closeDetailsFlyoutOnBg(event)">
+  <div class="entry-flyout" style="width:640px;display:flex;flex-direction:column">
+    <div class="entry-flyout-header">
+      <div style="min-width:0">
+        <h3 id="df-title" style="font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></h3>
+        <div id="df-subtitle" style="font-size:12px;color:#757575;margin-top:2px"></div>
+      </div>
+      <button style="background:none;border:none;font-size:20px;cursor:pointer;color:#757575;line-height:1;flex-shrink:0" onclick="closeDetailsFlyout()">✕</button>
+    </div>
+    <div style="flex:1;overflow-y:auto">
+
+      <!-- ── SECTION 1: Warehouse Journey ── -->
+      <div class="df-section">
+        <div class="df-section-hdr">
+          <span id="df-journey-title">🗺 Warehouse Journey</span>
+          <span class="df-section-sub" id="df-journey-sub">Adoption progress for this facility</span>
+        </div>
+        <div id="df-journey"></div>
+      </div>
+
+      <!-- ── SECTION 2: Issues & Requirements ── -->
+      <div class="df-section">
+        <div class="df-section-hdr">
+          <span>🎯 Issues &amp; Requirements</span>
+          <span class="df-section-sub" id="df-issues-sub">Tenant-level · visible across all warehouses</span>
+          <button class="btn-add-inline" style="margin-left:auto;flex-shrink:0;margin-right:4px" onclick="refreshIssuesInFlyout()" title="Re-sync from issues tracker">🔄</button>
+        </div>
+        <!-- Issues list -->
+        <div id="df-issues"></div>
+      </div>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+<!-- TENANT DETAIL DRAWER -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="tenant-drawer">
+  <div class="drawer-header">
+    <h3 id="drawer-title">Tenant Details</h3>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <div class="toast-icon">✅</div>
+  <div>
+    <div class="toast-title" id="toast-title">Done</div>
+    <div class="toast-body" id="toast-body"></div>
+  </div>
+</div>
+
+<script>
+  /* ── FEATURE + SUB-TAB SWITCHING ── */
+  let activeFeature = 'b2c';
+  let activeSubTab  = 0;
+
+  const featureConfig = {
+    b2c: { prefix: 'b2c-panel', count: 4 },
+    b2b: { prefix: 'b2b-panel', count: 4 },
+    cc:  { prefix: 'cc-panel',  count: 4 },
+  };
+
+  function switchFeature(featureId, el) {
+    if (activeFeature === featureId) return;
+    activeFeature = featureId;
+
+    // Update feature nav highlight
+    document.querySelectorAll('.feat-nav-item').forEach(n => n.classList.remove('active'));
+    el.classList.add('active');
+
+    // Show correct feature panel
+    document.querySelectorAll('.feat-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('feat-' + featureId).classList.add('active');
+
+    // Reset sub-tab to 0
+    activeSubTab = 0;
+    document.querySelectorAll('.page-tab').forEach((t, i) => {
+      t.classList.toggle('active', i === 0);
+    });
+
+    // Show first sub-panel of new feature
+    const cfg = featureConfig[featureId];
+    for (let i = 0; i < cfg.count; i++) {
+      const panel = document.getElementById(cfg.prefix + '-' + i);
+      if (panel) panel.classList.toggle('active', i === 0);
+    }
+
+    document.querySelector('.scroll-area').scrollTop = 0;
+    if (featureId === 'b2c') renderB2CTable();
+    if (featureId === 'b2b') renderB2BTable();
+    if (featureId === 'cc')  renderCCTable();
+    renderSummaryCard(featureId); // refresh sheet-driven summary card for the new feature
+  }
+
+  function switchSubTab(idx, el) {
+    activeSubTab = idx;
+    document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+
+    const cfg = featureConfig[activeFeature];
+    for (let i = 0; i < cfg.count; i++) {
+      const panel = document.getElementById(cfg.prefix + '-' + i);
+      if (panel) panel.classList.toggle('active', i === idx);
+    }
+    document.querySelector('.scroll-area').scrollTop = 0;
+  }
+
+  // Legacy alias used elsewhere
+  function switchTab(idx, el) { switchSubTab(idx, el); }
+
+  /* ── Navigate to Tenant Adoption Details with a stage filter pre-applied ── */
+  function goToDetails(stage) {
+    // Switch to sub-tab 1 (Tenant Adoption Details)
+    const tabEls = document.querySelectorAll('.page-tab');
+    if (tabEls[1]) switchSubTab(1, tabEls[1]);
+
+    // Apply the filter chip for the active feature
+    const feat = activeFeature;
+    const filterFn = { b2c: filterB2C, b2b: filterB2B, cc: filterCC }[feat];
+    if (!filterFn) return;
+
+    // Find the matching chip in the details panel and activate it
+    const chipSel = stage === 'all'
+      ? `#feat-${feat} .rag-chip:first-child`
+      : `#feat-${feat} .rag-chip[onclick*="'${stage}'"]`;
+    const chip = document.querySelector(chipSel);
+    if (chip) filterFn(stage, chip);
+  }
+
+  /* ── FACILITY DATA (real, from Google Sheet, as of 16 Apr 2026) ── */
+  const facilities = [
+    { tenant:'powerhouse91',              facility:'Powerhouse91_Mother_Wh',          b2c:0,      b2b:35791, cc:1236,   config:'31-Mar-2026' },
+    { tenant:'4mclothingllp',             facility:'SAPL-WH1',                        b2c:0,      b2b:0,     cc:126427, config:'31-Mar-2026' },
+    { tenant:'4mclothingllp',             facility:'SAPL-WH2',                        b2c:0,      b2b:0,     cc:887,    config:'31-Mar-2026' },
+    { tenant:'brandstudio',               facility:'BLR4KHB',                         b2c:0,      b2b:8667,  cc:0,      config:'31-Mar-2026' },
+    { tenant:'brandstudio',               facility:'SandS_Marketing',                 b2c:1450,   b2b:7171,  cc:0,      config:'7-Apr-2026'  },
+    { tenant:'brandstudio',               facility:'BLR4-EBO',                        b2c:0,      b2b:268,   cc:0,      config:'31-Mar-2026' },
+    { tenant:'mamaearth',                 facility:'North Emiza TDC',                 b2c:4868,   b2b:0,     cc:0,      config:'3-Apr-2026'  },
+    { tenant:'mamaearth',                 facility:'North Emiza ED',                  b2c:1830,   b2b:0,     cc:0,      config:'3-Apr-2026'  },
+    { tenant:'mamaearth',                 facility:'North Emiza BB',                  b2c:876,    b2b:0,     cc:0,      config:'3-Apr-2026'  },
+    { tenant:'walkaroo',                  facility:'CW01_ITEM',                       b2c:5249,   b2b:0,     cc:0,      config:'31-Mar-2026' },
+    { tenant:'walkaroo',                  facility:'CW08_ITEM',                       b2c:142,    b2b:0,     cc:0,      config:'31-Mar-2026' },
+    { tenant:'staze',                     facility:'STAZE D2C EMIZA',                 b2c:3641,   b2b:0,     cc:0,      config:'2-Apr-2026'  },
+    { tenant:'staze',                     facility:'LUMI D2C EMIZA',                  b2c:12,     b2b:0,     cc:0,      config:'2-Apr-2026'  },
+    { tenant:'rarerabbit',                facility:'RTPL(MALUR)',                     b2c:3171,   b2b:0,     cc:0,      config:'3-Apr-2026'  },
+    { tenant:'rarerabbit',                facility:'LFS-1307',                        b2c:832,    b2b:0,     cc:0,      config:'26-Mar-2026' },
+    { tenant:'bearhouse',                 facility:'Whitefield',                      b2c:0,      b2b:2725,  cc:3424,   config:'31-Mar-2026' },
+    { tenant:'bearhouse',                 facility:'Emizanel',                        b2c:0,      b2b:3313,  cc:0,      config:'31-Mar-2026' },
+    { tenant:'bearhouse',                 facility:'Haryana',                         b2c:0,      b2b:1209,  cc:0,      config:'31-Mar-2026' },
+    { tenant:'knyamed',                   facility:'Knya_Emiza_Mum',                  b2c:0,      b2b:3364,  cc:0,      config:'31-Mar-2026' },
+    { tenant:'knyamed',                   facility:'Knya_Holisol_Mum1',               b2c:0,      b2b:295,   cc:0,      config:'31-Mar-2026' },
+    { tenant:'newme',                     facility:'Newme Bangalore',                 b2c:2385,   b2b:0,     cc:1073,   config:'10-Apr-2026' },
+    { tenant:'adaasia',                   facility:'adaasia - batching',              b2c:2604,   b2b:0,     cc:0,      config:'26-Mar-2026' },
+    { tenant:'bananaclub',                facility:'Banana Club-NEL',                 b2c:1094,   b2b:160,   cc:0,      config:'31-Mar-2026' },
+    { tenant:'pinspiration',              facility:'West_Bengal-SRF',                 b2c:807,    b2b:0,     cc:0,      config:'31-Mar-2026' },
+    { tenant:'veirdo',                    facility:'Awesomefab Prozo_Gur3',           b2c:779,    b2b:0,     cc:0,      config:'31-Mar-2026' },
+    { tenant:'veirdo',                    facility:'EKART_KOL',                       b2c:253,    b2b:0,     cc:0,      config:'9-Apr-2026'  },
+    { tenant:'imperialonlineservicespvtltd', facility:'Prozo_Urbano_GURSULT1',        b2c:689,    b2b:0,     cc:0,      config:'31-Mar-2026' },
+    { tenant:'somersaultiopl',            facility:'Impulse Overseas Pvt Ltd',        b2c:132,    b2b:0,     cc:705,    config:'7-Apr-2026'  },
+    { tenant:'allthings',                 facility:'BLRFC7',                          b2c:373,    b2b:0,     cc:0,      config:'31-Mar-2026' },
+    { tenant:'tcns',                      facility:'IKS_GRHR',                        b2c:313,    b2b:0,     cc:132,    config:'24-Mar-2026' },
+    { tenant:'nobero',                    facility:'EK_NOBE_KOL_2',                   b2c:282,    b2b:46,    cc:0,      config:'8-Apr-2026'  },
+    { tenant:'nobero',                    facility:'Prozo_NOBE_GUR',                  b2c:283,    b2b:0,     cc:0,      config:'27-Mar-2026' },
+    { tenant:'duckduckbaby',              facility:'DDB Noida warehouse',             b2c:291,    b2b:0,     cc:0,      config:'16-Apr-2026' },
+    { tenant:'tmrw',                      facility:'EKART_KOLKATA',                   b2c:259,    b2b:0,     cc:0,      config:'9-Apr-2026'  },
+    { tenant:'grandpitstop2',             facility:'HR2_GPS',                         b2c:192,    b2b:0,     cc:0,      config:'30-Mar-2026' },
+    { tenant:'mosaicwellnesspvtlmt',      facility:'SL Mother Hub',                   b2c:0,      b2b:123,   cc:0,      config:'15-Apr-2026' },
+    { tenant:'airspeed',                  facility:'ASX Lopez Non-Batch',             b2c:82,     b2b:0,     cc:0,      config:'26-Mar-2026' },
+    { tenant:'airspeed',                  facility:'Airspeed C5 Non Batch',           b2c:31,     b2b:0,     cc:0,      config:'26-Mar-2026' },
+    { tenant:'clanindia',                 facility:'Noida',                           b2c:0,      b2b:0,     cc:0,      config:'27-Mar-2026' },
+  ];
+
+  function getStatus(f) {
+    const total = f.b2c + f.b2b;   // picking-only for RAG — CC de-scoped for now
+    if (total >= 500) return 'green';
+    if (total > 0)   return 'amber';
+    return 'red';
+  }
+
+  function fmtNum(n) {
+    if (!n) return '<span style="color:var(--uc-disabled)">—</span>';
+    return '<strong>' + n.toLocaleString('en-IN') + '</strong>';
+  }
+
+  function statusBadge(s) {
+    if (s==='green') return '<span class="badge badge-green"><span class="badge-dot dot-green"></span>Active</span>';
+    if (s==='amber') return '<span class="badge badge-amber"><span class="badge-dot dot-amber"></span>Low</span>';
+    return '<span class="badge badge-red"><span class="badge-dot dot-red"></span>Inactive</span>';
+  }
+
+  /* ── FEEDBACK + ISSUES STORAGE ── */
+  const FB_KEY            = 'hhd_fb_v1';
+  const ISSUES_KEY        = 'hhd_issues_v1';        // new issues captured via dashboard
+  const LEGACY_ISSUES_KEY = 'hhd_legacy_issues_v1'; // read-only: from existing issues tracker
+  function loadFeedback() { try { return JSON.parse(localStorage.getItem(FB_KEY)||'[]'); } catch(e) { return []; } }
+  function saveFeedback(arr) { localStorage.setItem(FB_KEY, JSON.stringify(arr)); }
+  function loadIssues()        { try { return JSON.parse(localStorage.getItem(ISSUES_KEY)||'[]'); } catch(e) { return []; } }
+  function saveIssues(arr)     { localStorage.setItem(ISSUES_KEY, JSON.stringify(arr)); }
+  function loadLegacyIssues()  { try { return JSON.parse(localStorage.getItem(LEGACY_ISSUES_KEY)||'[]'); } catch(e) { return []; } }
+  function saveLegacyIssues(arr) { localStorage.setItem(LEGACY_ISSUES_KEY, JSON.stringify(arr)); }
+  // Merge: returns issues for a given tenant + feature module
+  // feature: 'b2c' | 'b2b' | 'cc' | '' (empty = all)
+  const FEAT_MODULES = {
+    b2c: ['B2C Picking',  'General App Issue'],
+    b2b: ['B2B Picking',  'General App Issue'],
+    cc:  ['Cycle Count',  'General App Issue'],
+  };
+  function allIssuesForTenant(tenant, feature) {
+    const allowedModules = FEAT_MODULES[feature] || null; // null = no filter
+    const matchTenant = i => normalizeClient(i.tenant) === normalizeClient(tenant);
+    const matchModule = i => !allowedModules || !i.module || allowedModules.includes(i.module);
+    const fresh  = loadIssues().filter(i => matchTenant(i) && matchModule(i));
+    const legacy = loadLegacyIssues().filter(i => matchTenant(i) && matchModule(i));
+    return [...fresh, ...legacy];
+  }
+  function normalizeClient(name) {
+    return (name||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+  }
+
+  /* ── DETAILS FLYOUT ── */
+  let dfTenant = '', dfFacility = '', dfFeature = '';
+
+  function openDetailsFlyout(tenant, facility, feature) {
+    dfTenant = tenant; dfFacility = facility; dfFeature = feature;
+    document.getElementById('df-title').textContent = tenant;
+    document.getElementById('df-subtitle').textContent = facility;
+    // Hide forms on open
+
+    // Update section titles for the current feature
+    const modLabel = { b2c:'B2C Picking', b2b:'B2B Picking', cc:'Cycle Count' };
+    const modIcon  = { b2c:'📦', b2b:'🏭', cc:'🔄' };
+    const jTitleEl = document.getElementById('df-journey-title');
+    if (jTitleEl) jTitleEl.textContent = `${modIcon[feature]||'🗺'} ${modLabel[feature]||'Warehouse'} Journey`;
+    const jSubEl = document.getElementById('df-journey-sub');
+    if (jSubEl) jSubEl.textContent = `Stage progress for ${facility}`;
+    const subEl = document.getElementById('df-issues-sub');
+    if (subEl) subEl.textContent = `Tenant-level · ${modLabel[feature]||''} & General App Issues`;
+    renderWarehouseJourney();
+    renderTenantIssues();
+    document.getElementById('details-flyout-overlay').classList.add('open');
+  }
+  function closeDetailsFlyoutOnBg(e) {
+    if (e.target === document.getElementById('details-flyout-overlay')) closeDetailsFlyout();
+  }
+
+  /* ── Section 1: Warehouse Journey — view-only ── */
+  function renderWarehouseJourney() {
+    const allEntries = loadEntries();
+    const fac = facilities.find(f => f.tenant === dfTenant && f.facility === dfFacility);
+    const key = dfFeature;
+
+    const e   = allEntries.find(x => x.feature === key && x.tenant === dfTenant && x.facility === dfFacility);
+    const eff = e?.stage || (fac?.config && (fac[key] || 0) > 0 ? 'started' : null);
+
+    // Two stages: Started and On Hold
+    const stages = [
+      { id:'started', label:'Go-Live' },
+      { id:'on_hold', label:'On Hold' },
+    ];
+    const curIdx = eff ? stages.findIndex(s => s.id === eff) : -1;
+    const goLive = e?.startDate || fac?.config || '';
+
+    const stageNodes = stages.map((s, idx) => {
+      const current = idx === curIdx;
+      const onHold  = s.id === 'on_hold' && eff === 'on_hold';
+      const bg     = current ? (onHold ? '#FFF3E0' : '#E8F5E9') : '#FAFAFA';
+      const col    = current ? (onHold ? '#E65100' : '#2E7D32') : '#BDBDBD';
+      const fw     = current ? '700' : '500';
+      const border = current ? `2px solid ${onHold?'#FF9800':'#4CAF50'}` : '1.5px solid #E0E0E0';
+      const check  = current ? (onHold ? '⚠ ' : '● ') : '';
+      const dateStr = current && goLive ? goLive : '';
+      return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0;flex:1">
+        <div style="padding:6px 16px;border-radius:20px;font-size:12px;font-weight:${fw};color:${col};background:${bg};border:${border};white-space:nowrap">${check}${s.label}</div>
+        <div style="font-size:10px;color:${dateStr?col:'#BDBDBD'};white-space:nowrap;font-weight:500">${dateStr || '—'}</div>
+      </div>`;
+    });
+
+    const pipelineHtml = `<div style="display:flex;align-items:flex-start;gap:0;margin:10px 0 14px;width:100%">` +
+      stageNodes.map((node, idx) => node + (idx < stages.length - 1
+        ? `<div style="height:2px;background:#E0E0E0;min-width:24px;flex:0 0 40px;margin-top:15px"></div>` : '')
+      ).join('') + `</div>`;
+
+    const csm   = e?.csm   || '';
+    const notes = e?.notes || '';
+    const metaHtml = `<div style="display:flex;align-items:center;gap:12px;font-size:11px;color:var(--uc-secondary);flex-wrap:wrap">
+      ${csm   ? `<span>👤 CSM: <strong>${csm}</strong></span>` : ''}
+      ${notes ? `<span title="${notes}">📝 ${notes.slice(0,80)}${notes.length>80?'…':''}</span>` : ''}
+    </div>`;
+
+    document.getElementById('df-journey').innerHTML = pipelineHtml + metaHtml;
+  }
+  function closeDetailsFlyout() {
+    document.getElementById('details-flyout-overlay').classList.remove('open');
+  }
+  async function refreshIssuesInFlyout() {
+    const subEl = document.getElementById('df-issues-sub');
+    const origText = subEl ? subEl.textContent : '';
+    if (subEl) subEl.textContent = '🔄 Syncing from tracker…';
+    await syncIssuesFromSheet();
+    if (subEl) subEl.textContent = origText;
+    renderTenantIssues();
+    const all = allIssuesForTenant(dfTenant, dfFeature);
+    showToast('🔄 Issues Refreshed', `${all.length} issue${all.length!==1?'s':''} for ${dfTenant}`, false);
+  }
+
+  /* ── Section 2: Issues & Requirements (view-only) ── */
+
+  function renderTenantIssues() {
+    const all = allIssuesForTenant(dfTenant, dfFeature);
+    const el  = document.getElementById('df-issues');
+    if (!all.length) {
+      const modLabel = { b2c:'B2C Picking', b2b:'B2B Picking', cc:'Cycle Count' };
+      el.innerHTML = `<div style="color:#BDBDBD;font-size:12px;padding:10px 0;line-height:1.6">
+        No ${modLabel[dfFeature]||''} or General App issues found for <strong>${dfTenant}</strong>.<br>
+        <span style="font-size:11px">Use 🔄 to sync from the tracker, or + Capture Issue to log a new one.</span>
+      </div>`;
+      return;
+    }
+    const priCls = { P0:'df-priority-p0', P1:'df-priority-p1', P2:'df-priority-p2', P3:'df-priority-p3' };
+    const typeClsMap = { 'Bug':'badge-red','Requirement':'badge-blue','UX Enhancement':'badge-blue','Query':'badge-amber','Blocker':'badge-red' };
+    const modColors = {
+      'B2C Picking':      'background:#E3F2FD;color:#1565C0',
+      'B2B Picking':      'background:#F3E5F5;color:#6A1B9A',
+      'Cycle Count':      'background:#E0F7FA;color:#00695C',
+      'General App Issue':'background:#F5F5F5;color:#616161',
+    };
+    const statusBadge = s => {
+      if (s === 'Open')          return `<span class="badge badge-red"   style="font-size:10px">🔴 Open</span>`;
+      if (s === 'In Progress')   return `<span class="badge badge-amber" style="font-size:10px">🟡 In Progress</span>`;
+      if (s === 'In UAT')        return `<span class="badge badge-blue"  style="font-size:10px">🔵 In UAT</span>`;
+      if (s === 'Backlog')       return `<span class="badge"             style="font-size:10px;background:#F5F5F5;color:#757575">📋 Backlog</span>`;
+      if (s === 'Knowledge Gap') return `<span class="badge"             style="font-size:10px;background:#EDE7F6;color:#512DA8">🧠 Knowledge Gap</span>`;
+      if (s === 'Rejected')      return `<span class="badge"             style="font-size:10px;background:#F5F5F5;color:#9E9E9E">✗ Rejected</span>`;
+      if (s === 'Resolved')      return `<span class="badge badge-green" style="font-size:10px">✅ Resolved</span>`;
+      return `<span class="badge" style="font-size:10px;background:#F5F5F5;color:#757575">${s||'—'}</span>`;
+    };
+    const statusOrd = {'Open':0,'In Progress':1,'In UAT':2,'Backlog':3,'Rejected':4,'Knowledge Gap':5,'Resolved':6};
+    const sorted = [...all].sort((a,b) => {
+      const ao = statusOrd[a.status] ?? 3, bo = statusOrd[b.status] ?? 3;
+      if (ao !== bo) return ao - bo;
+      const aT = typeof a.createdAt === 'number' ? a.createdAt : (new Date(a.createdAt||0).getTime()||0);
+      const bT = typeof b.createdAt === 'number' ? b.createdAt : (new Date(b.createdAt||0).getTime()||0);
+      return bT - aT;
+    });
+
+    // ── Summary counts ──
+    const openCount     = all.filter(i => !['Resolved','Rejected','Knowledge Gap'].includes(i.status)).length;
+    const closedCount   = all.filter(i =>  ['Resolved','Rejected','Knowledge Gap'].includes(i.status)).length;
+    const bugCount      = all.filter(i => (i.type||'').toLowerCase().includes('bug')).length;
+    const reqCount      = all.filter(i => (i.type||'').toLowerCase().includes('requirement')).length;
+    const uxCount       = all.filter(i => (i.type||'').toLowerCase().includes('ux')).length;
+
+    const summaryHtml = `<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--uc-border)">
+      ${bugCount ? `<span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px;background:#FFEBEE;color:#C62828">🐛 ${bugCount} Bug${bugCount>1?'s':''}</span>` : ''}
+      ${reqCount ? `<span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px;background:#E3F2FD;color:#1565C0">📋 ${reqCount} Req${reqCount>1?'s':''}</span>` : ''}
+      ${uxCount  ? `<span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:12px;background:#F3E5F5;color:#6A1B9A">🎨 ${uxCount} UX</span>` : ''}
+      <span style="margin-left:auto;font-size:11px;color:var(--uc-secondary)">${openCount} open · ${closedCount} closed</span>
+    </div>`;
+
+    // ── Issue cards — open issues always visible, closed in collapsible ──
+    const openIssues   = sorted.filter(i => !['Resolved','Rejected','Knowledge Gap'].includes(i.status));
+    const closedIssues = sorted.filter(i =>  ['Resolved','Rejected','Knowledge Gap'].includes(i.status));
+
+    const buildCard = i => {
+      const isLegacy = i.source === 'legacy';
+      const isClosed = ['Resolved','Rejected','Knowledge Gap'].includes(i.status);
+      const tc = Object.entries(typeClsMap).find(([k]) => (i.type||'').includes(k))?.[1] || 'badge-amber';
+      const pc = priCls[i.priority] || 'df-priority-p3';
+      let dateStr = '';
+      if (i.reportDate) {
+        dateStr = i.reportDate;
+      } else if (typeof i.createdAt === 'number') {
+        dateStr = new Date(i.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+      } else {
+        dateStr = i.createdAt || '';
+      }
+      const modStyle  = modColors[i.module] || 'background:#F5F5F5;color:#616161';
+      const modBadge  = i.module ? `<span style="font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;${modStyle}">${i.module}</span>` : '';
+      const legacyBadge = (i.source === 'legacy') ? `<span style="font-size:10px;padding:2px 6px;border-radius:4px;background:#FFF8E1;color:#F57F17;font-weight:600" title="From existing issues tracker">📄 Tracker</span>` : '';
+      const crLink    = i.crKapture ? `<a href="${i.crKapture}" target="_blank" style="font-size:10px;color:var(--uc-primary);text-decoration:none">🔗 CR/Kapture</a>` : '';
+      const remarksHtml = i.remarks ? `<div style="font-size:11px;color:#757575;margin-top:4px;padding:6px 8px;background:#FAFAFA;border-radius:4px;border-left:3px solid #E0E0E0"><strong>Remarks:</strong> ${i.remarks}</div>` : '';
+      const pendingHtml = i.pendingOn ? `<span style="font-size:10px;color:#616161">🧑‍💻 ${i.pendingOn}</span>` : '';
+      // View-only: no action buttons
+      const actionBtns = '';
+      return `<div class="df-issue-card ${isClosed?'df-issue-resolved':''}">
+        <div class="df-issue-top" style="flex-wrap:wrap;gap:4px;align-items:flex-start">
+          <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center;flex:1">
+            ${statusBadge(i.status)}
+            <span class="badge ${tc}" style="font-size:10px">${i.type}</span>
+            <span class="df-priority ${pc}">${i.priority||'—'}</span>
+            ${modBadge}${legacyBadge}
+          </div>
+          ${actionBtns}
+        </div>
+        <div class="df-issue-desc" style="${isClosed?'opacity:0.6':''}">${i.description}</div>
+        ${remarksHtml}
+        <div class="df-issue-meta" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span>${dateStr}</span>
+          ${i.csm ? `<span>· ${i.csm}</span>` : ''}
+          ${pendingHtml}${crLink}
+        </div>
+      </div>`;
+    };
+
+    const openHtml   = openIssues.map(buildCard).join('');
+    const closedHtml = closedIssues.map(buildCard).join('');
+    const closedToggle = closedIssues.length > 0
+      ? `<div style="margin-top:8px">
+          <button onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.textContent=this.textContent.includes('▶')?'▲ Hide closed':'▶ Show closed (${closedIssues.length})';"
+            style="font-size:11px;color:var(--uc-secondary);background:none;border:none;cursor:pointer;padding:2px 0">
+            ▶ Show closed (${closedIssues.length})
+          </button>
+          <div style="display:none">${closedHtml}</div>
+        </div>`
+      : '';
+
+    el.innerHTML = summaryHtml + (openHtml || `<div style="color:#BDBDBD;font-size:12px;padding:6px 0">No open issues 🎉</div>`) + closedToggle;
+  }
+
+
+  let activeFilter = 'all', searchQuery = '', workflowFilter = '';
+
+  function renderTenants() {
+    let rows = facilities.filter(f => {
+      const s = getStatus(f);
+      const matchFilter = activeFilter === 'all' || s === activeFilter;
+      const matchSearch = (f.tenant + f.facility).toLowerCase().includes(searchQuery.toLowerCase());
+      const matchWF = !workflowFilter
+        || (workflowFilter === 'b2c'   && f.b2c > 0)
+        || (workflowFilter === 'b2b'   && f.b2b > 0)
+        || (workflowFilter === 'cc'    && f.cc > 0)
+        || (workflowFilter === 'multi' && (f.b2c>0) + (f.b2b>0) + (f.cc>0) >= 2);
+      return matchFilter && matchSearch && matchWF;
+    });
+
+    document.getElementById('tenant-count').textContent = `Showing ${rows.length} of ${facilities.length} facilities`;
+
+    // Group — track last tenant to show grouping visually
+    let lastTenant = '';
+    document.getElementById('tenant-tbody').innerHTML = rows.map((f, i) => {
+      const s = getStatus(f);
+      const tenantCell = f.tenant === lastTenant
+        ? `<td style="color:var(--uc-secondary);font-size:12px;padding-left:20px">↳</td>`
+        : `<td style="font-weight:700">${f.tenant}</td>`;
+      lastTenant = f.tenant;
+      return `
+        <tr onclick="openDrawer(${i}, this)" data-idx="${i}">
+          <td style="color:var(--uc-secondary);width:28px">${i+1}</td>
+          ${tenantCell}
+          <td style="color:var(--uc-secondary);font-size:12px">${f.facility}</td>
+          <td>${fmtNum(f.b2c)}</td>
+          <td>${fmtNum(f.b2b)}</td>
+          <td style="color:#BDBDBD;font-size:12px">${f.cc ? fmtNum(f.cc) : '—'}</td>
+          <td style="color:var(--uc-secondary);font-size:12px">${f.config}</td>
+          <td>${statusBadge(s)}</td>
+          <td><button class="btn-outlined" onclick="openDrawer(${i});event.stopPropagation()">📊 Details</button></td>
+        </tr>`;
+    }).join('');
+  }
+
+  function filterFacilities(s, el) {
+    document.querySelectorAll('.rag-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active'); activeFilter = s; renderTenants();
+  }
+  function searchFacilities(q)  { searchQuery = q;      renderTenants(); }
+  function filterByWorkflow(v)  { workflowFilter = v;   renderTenants(); }
+
+  /* ── DRAWER ── */
+  function openDrawer(idx) {
+    // idx is position in the currently filtered list — find from full array
+    const f = facilities[idx] || facilities.find((_,i) => i === idx);
+    if (!f) return;
+    const s = getStatus(f);
+    const total = f.b2c + f.b2b + f.cc;
+    const wfList = [f.b2c>0?'B2C Picking':'', f.b2b>0?'B2B Picking':'', f.cc>0?'Cycle Count':''].filter(Boolean).join(', ') || 'None active';
+
+    document.getElementById('drawer-title').textContent = f.tenant + ' · ' + f.facility;
+    document.getElementById('drawer-body').innerHTML = `
+      <div style="margin-bottom:14px">${statusBadge(s)}</div>
+
+      <div class="drawer-section">
+        <div class="drawer-section-title">Daily Avg (Last 7 Days)</div>
+        <div class="drawer-kpi-row">
+          <div class="drawer-kpi">
+            <div class="drawer-kpi-label">B2C Picks / Day</div>
+            <div class="drawer-kpi-value" style="color:#1F87C2">${f.b2c ? f.b2c.toLocaleString('en-IN') : '—'}</div>
+          </div>
+          <div class="drawer-kpi">
+            <div class="drawer-kpi-label">B2B Picks / Day</div>
+            <div class="drawer-kpi-value" style="color:#4A934A">${f.b2b ? f.b2b.toLocaleString('en-IN') : '—'}</div>
+          </div>
+          <div class="drawer-kpi">
+            <div class="drawer-kpi-label">Cycle Count / Day</div>
+            <div class="drawer-kpi-value" style="color:#9C27B0">${f.cc ? f.cc.toLocaleString('en-IN') : '—'}</div>
+          </div>
+          <div class="drawer-kpi">
+            <div class="drawer-kpi-label">Total Activity / Day</div>
+            <div class="drawer-kpi-value">${total.toLocaleString('en-IN')}</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="drawer-section">
+        <div class="drawer-section-title">Facility Info</div>
+        <div class="drawer-row"><span class="drawer-row-label">Tenant</span><span class="drawer-row-value">${f.tenant}</span></div>
+        <div class="drawer-row"><span class="drawer-row-label">Facility</span><span class="drawer-row-value">${f.facility}</span></div>
+        <div class="drawer-row"><span class="drawer-row-label">Start Date</span><span class="drawer-row-value">${f.config}</span></div>
+        <div class="drawer-row"><span class="drawer-row-label">Active Workflows</span><span class="drawer-row-value">${wfList}</span></div>
+      </div>
+
+      <div class="drawer-section">
+        <div class="drawer-section-title">Activity Status</div>
+        <div class="timeline">
+          <div class="tl-item">
+            <div class="tl-dot done"></div>
+            <div class="tl-label">Configured</div>
+            <div class="tl-sub">App configured on ${f.config}</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot ${total > 0 ? 'done' : 'pending'}"></div>
+            <div class="tl-label">First Transaction</div>
+            <div class="tl-sub">${total > 0 ? 'Live — transactions recorded' : 'No activity recorded yet'}</div>
+          </div>
+          <div class="tl-item">
+            <div class="tl-dot ${total >= 500 ? 'done' : 'pending'}"></div>
+            <div class="tl-label">High Adoption</div>
+            <div class="tl-sub">${total >= 500 ? `Avg ${total.toLocaleString('en-IN')} actions/day` : total > 0 ? `Low — only ${total} avg/day` : 'Not reached'}</div>
+          </div>
+        </div>
+      </div>
+
+      ${s !== 'green' ? `
+      <div class="drawer-section">
+        <div class="drawer-section-title">CSM Action Required</div>
+        <div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:12px;font-size:13px;color:#5D4037">
+          ${s === 'red'
+            ? '🔴 Zero activity recorded. Check if device is set up and pickers are trained. Schedule a site visit.'
+            : '🟡 Low activity. Review if all eligible pickers are using the app. Share benchmark data from similar tenants.'}
+        </div>
+      </div>` : ''}
+    `;
+    document.getElementById('drawer-overlay').classList.add('open');
+    document.getElementById('tenant-drawer').classList.add('open');
+  }
+
+  function closeDrawer() {
+    document.getElementById('drawer-overlay').classList.remove('open');
+    document.getElementById('tenant-drawer').classList.remove('open');
+  }
+
+  /* ── FEEDBACK FORM ── */
+  let starRating = 3, fbType = '🐛 Bug / Issue';
+  function setStar(n) {
+    starRating = n;
+    document.querySelectorAll('.star').forEach((s,i) => s.classList.toggle('lit', i < n));
+  }
+  function selectFbType(el) {
+    document.querySelectorAll('.fb-type-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active'); fbType = el.textContent;
+  }
+  function submitFeedback() {
+    const tenant   = document.getElementById('fb-tenant').value;
+    const workflow = document.getElementById('fb-workflow').value;
+    const text     = document.getElementById('fb-text').value;
+    if (!tenant || !workflow || !text) { showToast('⚠ Missing fields','Fill all required fields.',true); return; }
+    const stars = '★'.repeat(starRating)+'☆'.repeat(5-starRating);
+    const contact = document.getElementById('fb-contact').value||'Not specified';
+    const csm = document.getElementById('fb-csm').value||'Unknown';
+    const today = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+    const bc = fbType.includes('Bug')?'badge-red':fbType.includes('Suggestion')?'badge-blue':fbType.includes('Appreciation')?'badge-green':'badge-amber';
+    document.getElementById('feedback-log').insertAdjacentHTML('afterbegin',`
+      <div class="fb-log-item">
+        <div class="fb-log-top">
+          <div><span class="fb-tenant">${tenant}</span><span class="badge ${bc}" style="margin-left:6px;font-size:10px">${fbType}</span></div>
+          <div class="fb-stars">${stars}</div>
+        </div>
+        <div class="fb-meta">${workflow} &nbsp;·&nbsp; ${contact} &nbsp;·&nbsp; ${today} &nbsp;·&nbsp; ${csm}</div>
+        <div class="fb-text">"${text}"</div>
+      </div>`);
+    ['fb-tenant','fb-workflow','fb-contact','fb-text'].forEach(id => document.getElementById(id).value='');
+    setStar(3);
+    showToast('✅ Feedback Submitted',`Feedback from ${tenant} logged successfully.`,false);
+  }
+
+  /* ── TRAINING MODULES ── */
+  function openModule(name) { showToast('🎓 Opening Module', `Loading: ${name}…`, false); }
+
+  /* ── TOAST ── */
+  function showToast(title, body, isError) {
+    const t = document.getElementById('toast');
+    document.getElementById('toast-title').textContent = title;
+    document.getElementById('toast-body').textContent = body;
+    t.className = 'toast'+(isError?' error':'');
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'), 3000);
+  }
+
+  // legacy alias
+  function filterTenants(s,el){ filterFacilities(s,el); }
+
+  /* ════════════════════════════════════════════════════
+     CSM ADOPTION TRACKER
+     ════════════════════════════════════════════════════ */
+
+  /* ── STORAGE ── */
+  const STORAGE_KEY = 'hhd_csm_v2';
+
+  // ── Google Sheet backend (Apps Script Web App) ──────────────────────────────
+  // After deploying sheet-backend.gs as a Web App, paste the URL below.
+  // Leave empty ('') to run in localStorage-only mode.
+  const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbyo22rdEiSTBfmhh6mJScfZtvi7fwYjs88GdNBiAsLvbKePlBKQChvN-XLS4aElqb1E/exec';
+
+  let _sheetSynced = false;   // true once we've done the initial pull from Sheet
+
+  function loadEntries() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+    catch(e) { return []; }
+  }
+  function saveEntries(arr) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  }
+  function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+  // ── Sheet sync helpers ───────────────────────────────────────────────────────
+  function setSheetStatus(msg, isErr) {
+    const el = document.getElementById('nav-sheet-status');
+    if (!el) return;
+    el.style.display = 'flex';
+    el.innerHTML = isErr
+      ? `<span style="color:#AD2820">⚠ ${msg}</span>`
+      : `<span style="color:#4A934A">${msg}</span>`;
+  }
+
+  // Hide the Sheet status pill on load if no API URL is configured
+  (function initSheetStatusPill() {
+    const el = document.getElementById('nav-sheet-status');
+    if (el && !SHEET_API_URL) el.style.display = 'none';
+  })();
+
+  async function sheetFetch(params) {
+    if (!SHEET_API_URL) return null;
+    try {
+      const url = SHEET_API_URL + '?' + new URLSearchParams(params).toString();
+      const r = await fetch(url, { redirect: 'follow' });
+      const j = await r.json();
+      if (!j.ok) {
+        console.warn('[Sheet] API error for action=' + params.action + ':', j.error || 'unknown');
+        return null;
+      }
+      return j;
+    } catch(err) {
+      console.warn('[Sheet] fetch failed for action=' + params.action + ':', err.message);
+      return null;
+    }
+  }
+
+  // Pull entries from Sheet on load; merge into localStorage (Sheet wins on conflict).
+  async function syncFromSheet() {
+    if (!SHEET_API_URL) return;
+    setSheetStatus('☁ Syncing…');
+    const result = await sheetFetch({ action: 'read' });
+    if (!result || !Array.isArray(result.entries)) {
+      setSheetStatus('Sheet unreachable — using local data', true);
+      return;
+    }
+    const local  = loadEntries();
+    const remote = result.entries;
+
+    // Build a merged map: remote entries win for matching ids.
+    const map = {};
+    local.forEach(e  => { map[e.id] = e; });
+    remote.forEach(e => { map[e.id] = e; }); // remote wins
+
+    const merged = Object.values(map);
+    saveEntries(merged);
+    _sheetSynced = true;
+    setSheetStatus(`☁ Synced · ${remote.length} entries`);
+
+    // Re-render after merge
+    renderB2CTable(); renderB2BTable(); renderCCTable();
+  }
+
+  // Pull new issues from Tenant_Issues sheet; merge into localStorage (Sheet wins).
+  async function syncIssuesFromSheet() {
+    if (!SHEET_API_URL) return;
+    const result = await sheetFetch({ action: 'read_issues' });
+    if (result && Array.isArray(result.issues)) {
+      const local = loadIssues();
+      const map   = {};
+      local.forEach(i  => { map[i.id] = i; });
+      result.issues.forEach(i => { map[i.id] = i; });
+      saveIssues(Object.values(map));
+    }
+    // Also pull legacy issues from existing tracker (read-only)
+    const legacyResult = await sheetFetch({ action: 'read_legacy_issues' });
+    if (legacyResult && Array.isArray(legacyResult.legacyIssues)) {
+      saveLegacyIssues(legacyResult.legacyIssues);
+      console.log('[Issues] Synced ' + legacyResult.legacyIssues.length + ' legacy issues from tracker');
+    } else {
+      console.warn('[Issues] Legacy issues sync failed or returned no data. Check Apps Script authorization — it may need re-authorization since it now accesses a second spreadsheet. Open the Apps Script editor, run readLegacyIssues() manually once to trigger the auth prompt.');
+    }
+  }
+
+  /* ── REDASH ──
+     Supports multiple queries — one per feature, or a single shared one.
+     Add/change URLs here as you get them from your team.
+     Set a URL to '' to skip that feature's query.
+  ── */
+  const REDASH_QUERIES = {
+    // Master tenant+warehouse list from Uniware — drives modal dropdowns
+    tenantFacility: 'https://redash.unicommerce.com/api/queries/9142/results.json?api_key=fHGtOpyYdEPyC7PJEJKOEeUgQeq3LKiD1tyWZ9aQ',
+    // DRR queries — fill in when available
+    shared: '',
+    b2c:    '',
+    b2b:    '',
+    cc:     '',
+  };
+
+  const TF_CACHE_KEY = 'hhd_tf_cache_v1';
+  const TF_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+
+  let redashRows = [];   // rows from tenant+facility query — drives modal dropdowns
+  let redashDRR  = {};   // "tenant::facility" → drr value (from DRR query)
+
+  /* ── TENANT+FACILITY LOADER ──
+     Priority order:
+       1. window._TF_DATA  — written by sync-tenant-data.py (no CORS, works from file://)
+       2. localStorage cache — from a previous successful fetch (7-day TTL)
+       3. Apps Script sheet — reads Tenant_Facilities tab via sheet API
+  ── */
+  function loadTenantFacilityData(forceRefresh) {
+
+    // ── 1. Local JS file ──
+    if (!forceRefresh && window._TF_DATA && window._TF_DATA.length > 0) {
+      redashRows = window._TF_DATA;
+      const updated = window._TF_UPDATED || 'unknown';
+      showTFStatus(`✅ ${redashRows.length} tenant-facilities loaded · synced ${updated.slice(0,10)}`);
+      showSyncBtn();
+      return;
+    }
+
+    // ── 2. localStorage cache (7-day TTL) ──
+    if (!forceRefresh) {
+      try {
+        const cached = JSON.parse(localStorage.getItem(TF_CACHE_KEY) || 'null');
+        if (cached && cached.rows && cached.rows.length > 0 && (Date.now() - cached.fetchedAt) < TF_CACHE_TTL) {
+          redashRows = cached.rows;
+          const daysAgo = Math.round((Date.now() - cached.fetchedAt) / 86400000);
+          showTFStatus(`✅ ${redashRows.length} tenant-facilities loaded · cached ${daysAgo === 0 ? 'today' : daysAgo + 'd ago'}`);
+          showSyncBtn();
+          return;
+        }
+      } catch(e) { console.warn('[TF] Cache parse error:', e); }
+    }
+
+    // ── 3. Apps Script sheet (Tenant_Facilities tab) ──
+    showTFStatus('⏳ Loading tenant-facility list from sheet…');
+    loadTenantFacilityDataFromSheet();
+  }
+
+  async function loadTenantFacilityDataFromSheet() {
+    if (!SHEET_API_URL) {
+      showTFStatus('⚠️ No sheet API configured. Run sync_tenant_data from Apps Script first.');
+      showSyncBtn();
+      return;
+    }
+    const result = await sheetFetch({ action: 'read_facilities' });
+    if (result && Array.isArray(result.facilities) && result.facilities.length > 0) {
+      // Map sheet columns → redashRows format {code, display_name}
+      redashRows = result.facilities.map(f => ({
+        code:         f.tenant_code    || '',
+        display_name: f.facility_name  || '',
+        b2c:          parseFloat(f.b2c_drr)   || 0,
+        b2b:          parseFloat(f.b2b_drr)   || 0,
+        cc:           parseFloat(f.cc_drr)    || 0,
+        config:       f.go_live_date   || '',
+      }));
+      // Cache in localStorage for 7 days
+      try {
+        localStorage.setItem(TF_CACHE_KEY, JSON.stringify({ rows: redashRows, fetchedAt: Date.now() }));
+      } catch(e) {}
+      const synced = result.synced ? ` · synced ${result.synced}` : '';
+      showTFStatus(`✅ ${redashRows.length} tenant-facilities loaded from sheet${synced}`);
+      showSyncBtn();
+    } else {
+      showTFStatus('⚠️ Tenant_Facilities sheet empty · click Sync from Redash to populate it');
+      showSyncBtn();
+    }
+  }
+
+  // Trigger Apps Script to fetch from Redash and refresh Tenant_Facilities sheet
+  async function syncTenantDataFromRedash() {
+    showTFStatus('⏳ Syncing from Redash via Apps Script… (may take ~10s)');
+    const result = await sheetFetch({ action: 'sync_tenant_data' });
+    if (result && result.rowCount) {
+      showTFStatus(`⏳ Sheet updated with ${result.rowCount} rows · reloading…`);
+      // Clear cache so we reload fresh from sheet
+      localStorage.removeItem(TF_CACHE_KEY);
+      await loadTenantFacilityDataFromSheet();
+    } else {
+      showTFStatus('⚠️ Sync failed — check Apps Script logs');
+    }
+  }
+
+  function showTFStatus(msg) {
+    // In-flyout status
+    const el = document.getElementById('tf-status');
+    if (el) el.textContent = msg;
+    // Top-nav pill
+    const nav = document.getElementById('nav-tf-status');
+    if (nav) {
+      const isOk  = msg.startsWith('✅');
+      const isErr = msg.startsWith('⚠');
+      const isBusy= msg.startsWith('⏳');
+      nav.innerHTML = `
+        <span style="width:7px;height:7px;border-radius:50%;flex-shrink:0;background:${isOk?'#4A934A':isErr?'#AD2820':'#F57F17'}"></span>
+        <span style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${msg.replace(/"/g,'&quot;')}">${msg}</span>
+        <button onclick="loadTenantFacilityData(true)" style="border:1px solid #E0E0E0;background:#fff;border-radius:4px;padding:1px 7px;font-size:10px;cursor:pointer;color:#1F87C2" title="Reload from sheet">↻</button>
+        ${isErr ? `<button onclick="syncTenantDataFromRedash()" style="border:1px solid #1F87C2;background:#1F87C2;border-radius:4px;padding:1px 7px;font-size:10px;cursor:pointer;color:#fff" title="Fetch from Redash & refresh sheet">⟳ Sync Redash</button>` : ''}
+      `;
+    }
+    console.log('[TF]', msg);
+  }
+  function showSyncBtn() {
+    const btn = document.getElementById('tf-sync-btn');
+    if (btn) btn.style.display = 'inline-flex';
+  }
+  function hideSyncBtn() {
+    const btn = document.getElementById('tf-sync-btn');
+    if (btn) btn.style.display = 'none';
+  }
+
+  function updateRedashBanner(feat, state, msg) {
+    const banner = document.getElementById(feat + '-redash-banner');
+    const msgEl  = document.getElementById(feat + '-redash-msg');
+    if (!banner || !msgEl) return;
+    banner.className = 'redash-banner ' + state;
+    msgEl.textContent = msg;
+  }
+
+  /* Parse a Redash API response and merge into redashDRR map */
+  function parseRedashResponse(data) {
+    const qr = data && data.query_result && data.query_result.data;
+    if (!qr || !qr.rows || !qr.rows.length) return 0;
+
+    const cols = (qr.columns || []).map(c => (c.name || c).toLowerCase());
+    // Auto-detect column positions by keyword matching
+    const tenantIdx   = cols.findIndex(c => c.includes('tenant') || c.includes('client'));
+    const facilityIdx = cols.findIndex(c => c.includes('facility') || c.includes('warehouse') || c.includes('wh'));
+    const drrIdx      = cols.findIndex(c => c.includes('drr') || c.includes('order') || c.includes('pick') || c.includes('count') || c.includes('volume'));
+
+    qr.rows.forEach(row => {
+      // Redash returns rows as objects keyed by column name, or as arrays
+      const rowVals = Array.isArray(row) ? row : Object.values(row);
+      const tenant  = tenantIdx   >= 0 ? String(rowVals[tenantIdx]   || '').trim().toLowerCase() : '';
+      const fac     = facilityIdx >= 0 ? String(rowVals[facilityIdx] || '').trim().toLowerCase() : '';
+      const drr     = drrIdx      >= 0 ? parseFloat(rowVals[drrIdx]) || 0 : 0;
+      if (tenant && fac) redashDRR[tenant + '::' + fac] = drr;
+    });
+
+    return qr.rows.length;
+  }
+
+  function loadRedashData() {
+    // DRR queries only — tenant/facility list is handled separately by loadTenantFacilityData()
+    const urlMap = {};
+    if (REDASH_QUERIES.shared) urlMap[REDASH_QUERIES.shared] = ['b2c','b2b','cc'];
+    ['b2c','b2b','cc'].forEach(feat => {
+      const url = REDASH_QUERIES[feat];
+      if (url) urlMap[url] = urlMap[url] ? [...new Set([...urlMap[url], feat])] : [feat];
+    });
+
+    if (!Object.keys(urlMap).length) {
+      // No DRR URL yet — show sheet data in banners and render tables
+      ['b2c','b2b','cc'].forEach(f =>
+        updateRedashBanner(f, 'error', 'DRR query not configured · Showing Apr 2026 sheet data')
+      );
+      renderB2CTable(); renderB2BTable(); renderCCTable();
+      return;
+    }
+
+    ['b2c','b2b','cc'].forEach(f => updateRedashBanner(f, 'loading', 'Connecting to Redash for DRR…'));
+    redashDRR = {};
+
+    Promise.allSettled(
+      Object.keys(urlMap).map(url =>
+        fetch(url, { mode: 'cors' })
+          .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          .then(data => ({ url, data, feats: urlMap[url] }))
+      )
+    ).then(results => {
+      let totalRows = 0;
+      const failedFeats = new Set(['b2c','b2b','cc']);
+      const okFeats = new Set();
+
+      results.forEach(res => {
+        if (res.status === 'fulfilled') {
+          const { data, feats } = res.value;
+          const n = parseRedashResponse(data);
+          totalRows += n;
+          feats.forEach(f => { okFeats.add(f); failedFeats.delete(f); });
+        } else {
+          console.warn('[DRR] Redash fetch failed:', res.reason);
+        }
+      });
+
+      okFeats.forEach(f =>
+        updateRedashBanner(f, 'ok', `DRR live · ${totalRows} rows from Redash`)
+      );
+      failedFeats.forEach(f =>
+        updateRedashBanner(f, 'error', 'DRR query unreachable · Showing Apr 2026 sheet data')
+      );
+      renderB2CTable(); renderB2BTable(); renderCCTable();
+    });
+  }
+
+  /* ── DRR LOOKUP ──
+     Returns live Redash DRR if available (exact then fuzzy match).
+     Returns null if Redash not loaded — caller uses sheet value as fallback.
+  ── */
+  function getDRR(tenant, facility) {
+    if (!Object.keys(redashDRR).length) return null;
+    const key = (tenant||'').toLowerCase().trim() + '::' + (facility||'').toLowerCase().trim();
+    if (redashDRR[key] !== undefined) return redashDRR[key];
+    // Fuzzy match
+    for (const k of Object.keys(redashDRR)) {
+      const [t, f] = k.split('::');
+      if ((tenant.toLowerCase().includes(t) || t.includes(tenant.toLowerCase())) &&
+          (facility.toLowerCase().includes(f) || f.includes(facility.toLowerCase()))) {
+        return redashDRR[k];
+      }
+    }
+    return null;
+  }
+
+  /* ── STAGE BADGE ── */
+  const STAGE_META = {
+    started:  { label: '🚀 Started', cls: 'stage-started' },
+    on_hold:  { label: '⏸ On Hold',  cls: 'stage-on-hold' },
+    // Legacy: demo stages kept for backward compat with existing localStorage entries
+    demo_scheduled: { label: '📅 Demo Scheduled', cls: 'stage-demo-scheduled' },
+    demo_done:      { label: '✅ Demo Done',       cls: 'stage-demo-done'      },
+  };
+  function stageBadge(stage) {
+    const m = STAGE_META[stage] || { label: stage, cls: '' };
+    return `<span class="badge ${m.cls}" style="padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700">${m.label}</span>`;
+  }
+
+  /* ── VOLUME KEY — maps feature to the DRR field in facilities[] ── */
+  const FEAT_VOL = { b2c: 'b2c', b2b: 'b2b', cc: 'cc' };
+
+  /* ── BUILD MERGED ROWS ──
+     Base = all facilities[] rows that belong to this feature (incl. DRR=0 / inactive).
+     Overlay = CSM entry (if any) for that tenant+facility.
+     Result = one merged object per facility row.
+  ── */
+  function buildMergedRows(feat) {
+    const volField = FEAT_VOL[feat];
+    const csmEntries = loadEntries().filter(e => e.feature === feat);
+
+    // ── Primary rows: all facilities flagged as belonging to this feature ──
+    // _in_b2c / _in_b2b / _in_cc is set by applyBackendData(); falls back to
+    // DRR > 0 for the hardcoded facilities array used before backend data loads.
+    const facilityRows = facilities
+      .filter(f => f['_in_' + feat] !== undefined ? f['_in_' + feat] : f[volField] > 0)
+      .sort((a, b) => b[volField] - a[volField])
+      .map(f => {
+        // Try to find a matching CSM entry (case-insensitive)
+        const entry = csmEntries.find(e =>
+          e.tenant.toLowerCase()   === f.tenant.toLowerCase() &&
+          e.facility.toLowerCase() === f.facility.toLowerCase()
+        );
+        // Live DRR: prefer Redash if loaded, else use sheet value
+        const liveDRR = getDRR(f.tenant, f.facility) ?? f[volField];
+        return {
+          tenant:    f.tenant,
+          facility:  f.facility,
+          sheetDRR:  f[volField],
+          liveDRR:   liveDRR,
+          configDate: f.config,
+          isNew:        f['_new_'          + feat] || false,
+          isInactive:   f['_inactive_'     + feat] || false,
+          inactiveDays: f['_inactiveDays_' + feat] || 0,
+          id:        entry ? entry.id        : null,
+          stage:     entry ? entry.stage     : null,
+          csm:       entry ? entry.csm       : null,
+          notes:     entry ? entry.notes     : null,
+          startDate: entry ? entry.startDate : null,
+        };
+      });
+
+    // ── Orphan rows: CSM entries whose tenant-facility isn't in facilities list ──
+    // These always show so a saved entry is never invisible.
+    const trackedKeys = new Set(facilityRows.map(r => r.tenant.toLowerCase() + '::' + r.facility.toLowerCase()));
+    const orphanRows = csmEntries
+      .filter(e => !trackedKeys.has(e.tenant.toLowerCase() + '::' + e.facility.toLowerCase()))
+      .map(e => ({
+        tenant:     e.tenant,
+        facility:   e.facility,
+        sheetDRR:   0,
+        liveDRR:    getDRR(e.tenant, e.facility) ?? 0,
+        configDate: null,
+        id:         e.id,
+        stage:      e.stage,
+        csm:        e.csm,
+        notes:      e.notes,
+        startDate:  e.startDate,
+      }));
+
+    return [...facilityRows, ...orphanRows];
+  }
+
+  /* ── KPI + FUNNEL UPDATER ── */
+  function updateKPIsAndFunnel(feat, mergedRows) {
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+
+    // ── KPIs: always show real sheet data totals (all active facilities) ──
+    const allTenants = new Set(mergedRows.map(r => r.tenant)).size;
+    const allFacs    = mergedRows.length;
+    const totalDRR   = mergedRows.reduce((sum, r) => sum + (r.liveDRR || r.sheetDRR || 0), 0);
+
+    set(feat+'-kpi-tenants', allTenants || '0');
+    set(feat+'-kpi-wh',      allFacs    || '0');
+    set(feat+'-kpi-drr',     totalDRR ? totalDRR.toLocaleString('en-IN') : '—');
+
+    // Update KPI sub-labels dynamically
+    const drrSrc = Object.keys(redashDRR).length > 0 ? 'Redash · live' : 'Sheet · Apr 2026';
+    set(feat+'-kpi-tenants-sub', `Unique tenants · ${allFacs} facilities total`);
+    set(feat+'-kpi-wh-sub',     `Active ${feat.toUpperCase()} facilities`);
+    set(feat+'-kpi-drr-sub',    `Picks/day · ${drrSrc}`);
+
+    // ── Funnel ──
+    // Priority: CSM stage > sheet configDate (confirmed go-live) > untagged (DRR>0 = assumed live)
+    const stageCounts = { started:0, on_hold:0 };
+    const startedTenants = new Set();
+    let startedFacs = 0;
+    mergedRows.forEach(r => {
+      const stage = r.stage || 'started'; // configDate or no entry → assumed started
+      if (stageCounts[stage] !== undefined) stageCounts[stage]++;
+      if (stage === 'started') { startedTenants.add(r.tenant); startedFacs++; }
+    });
+    stageCounts.started = startedTenants.size;
+
+    // Distinguish sheet-confirmed live (has configDate, no CSM tag) vs genuinely unconfirmed
+    const sheetLive = mergedRows.filter(r => !r.stage &&  r.configDate).length;
+    const needsTag  = mergedRows.filter(r => !r.stage && !r.configDate).length;
+
+    set(feat+'-f-started',       stageCounts.started);
+    set(feat+'-f-started-facs',  startedFacs + ' facilities');
+    set(feat+'-f-on-hold',       stageCounts.on_hold);
+
+    // Refresh trend chart (already rendered if visible)
+    renderAdoptionTrend(feat, _trendPeriod[feat] || 'week');
+
+    // Funnel sub-note
+    const funnelEl = document.querySelector(`#feat-${feat} .funnel-strip`);
+    if (funnelEl) {
+      const existingNote = funnelEl.nextElementSibling?.classList?.contains('funnel-note') ? funnelEl.nextElementSibling : null;
+      const parts = [];
+      if (sheetLive > 0) parts.push(`📋 ${sheetLive} go-live date${sheetLive>1?'s':''} from sheet`);
+      if (needsTag  > 0) parts.push(`${needsTag} facilit${needsTag===1?'y':'ies'} pending CSM input`);
+      if (parts.length > 0) {
+        const note = existingNote || document.createElement('div');
+        note.className = 'funnel-note';
+        note.style.cssText = 'font-size:11px;color:var(--uc-secondary);margin-top:-12px;margin-bottom:16px';
+        note.textContent = parts.join(' · ');
+        if (!existingNote) funnelEl.insertAdjacentElement('afterend', note);
+      } else if (existingNote) {
+        existingNote.remove();
+      }
+    }
+  }
+
+  /* ── REDASH PAIR HELPERS ── */
+  function getRedashPairs() {
+    if (!redashRows.length) return { pairs: [] };
+    const cols = Object.keys(redashRows[0] || {});
+    const tCol = cols.find(c => c.toLowerCase().includes('tenant') || c.toLowerCase().includes('client'));
+    const fCol = cols.find(c => c.toLowerCase().includes('facility') || c.toLowerCase().includes('warehouse'));
+    if (!tCol || !fCol) return { pairs: [] };
+    const seen = new Set();
+    const pairs = [];
+    redashRows.forEach(row => {
+      const t = (row[tCol] || '').trim(), f = (row[fCol] || '').trim();
+      const key = t.toLowerCase() + '::' + f.toLowerCase();
+      if (t && f && !seen.has(key)) { seen.add(key); pairs.push({ tenant: t, facility: f }); }
+    });
+    return { pairs };
+  }
+
+  function ghostRow(feat, tenant, facility) {
+    const tEsc = tenant.replace(/'/g, "\\'");
+    const fEsc = facility.replace(/'/g, "\\'");
+    return `<tr class="ghost-row">
+      <td style="width:28px">—</td>
+      <td class="ghost-tenant">${tenant}</td>
+      <td class="ghost-fac">${facility}</td>
+      <td><span style="font-size:11px;background:#F0F0F0;color:#9E9E9E;padding:2px 8px;border-radius:4px;font-style:normal">Not tracked</span></td>
+      <td style="font-style:normal">—</td>
+      <td style="font-style:normal">—</td>
+      <td style="font-style:normal">—</td>
+      <td style="font-style:normal">—</td>
+      <td style="white-space:nowrap;font-style:normal">
+
+      </td>
+    </tr>`;
+  }
+
+  /* ── ADOPTION TREND HELPERS ── */
+  const _trendPeriod = { b2c: 'week', b2b: 'week', cc: 'week' };
+
+  function parseDashDate(str) {
+    if (!str) return null;
+    const s = String(str).trim();
+    // "31-Mar-2026" or "7-Apr-2026"
+    const m1 = s.match(/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/);
+    if (m1) {
+      const mos = {Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+      return new Date(parseInt(m1[3]), mos[m1[2]], parseInt(m1[1]));
+    }
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  function weekLabel(date) {
+    // Return "14 Apr" for the Monday of that week
+    const d = new Date(date);
+    const day = d.getDay(); // 0=Sun
+    const diff = (day === 0 ? -6 : 1 - day); // offset to Monday
+    d.setDate(d.getDate() + diff);
+    const mo = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+    return `${d.getDate()} ${mo}`;
+  }
+
+  function weekSortKey(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = (day === 0 ? -6 : 1 - day);
+    d.setDate(d.getDate() + diff);
+    return d.getTime();
+  }
+
+  function monthLabel(date) {
+    const mos = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return `${mos[date.getMonth()]} ${date.getFullYear()}`;
+  }
+
+  // Chart windows: 4 weekly buckets from Apr 1, 4 monthly buckets from Mar 1
+  const TREND_WINDOW = {
+    week:  { start: new Date('2026-04-01'), max: 4 },
+    month: { start: new Date('2026-03-01'), max: 4 },
+  };
+
+  function buildStartedTrend(feat, period) {
+    const merged = buildMergedRows(feat);
+    const points = [];
+    merged.forEach(r => {
+      const date = parseDashDate(r.startDate || r.configDate);
+      if (!date) return;
+      points.push({ tenant: r.tenant, facility: r.facility, date });
+    });
+    if (!points.length) return [];
+
+    const { start: windowStart, max: maxBuckets } = TREND_WINDOW[period] || TREND_WINDOW.week;
+
+    // Build explicit bucket start dates so empty periods still appear
+    const bucketStarts = [];
+    if (period === 'week') {
+      // Start from the Monday of the week containing windowStart
+      const d = new Date(windowStart);
+      const day = d.getDay();
+      d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day));
+      for (let i = 0; i < maxBuckets; i++) {
+        bucketStarts.push(new Date(d));
+        d.setDate(d.getDate() + 7);
+      }
+    } else {
+      const d = new Date(windowStart.getFullYear(), windowStart.getMonth(), 1);
+      for (let i = 0; i < maxBuckets; i++) {
+        bucketStarts.push(new Date(d));
+        d.setMonth(d.getMonth() + 1);
+      }
+    }
+
+    const today = new Date();
+
+    const MOS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const todayLabel = `${today.getDate()} ${MOS[today.getMonth()]}`;
+
+    return bucketStarts
+      .filter(bs => bs <= today)           // skip future buckets
+      .map((bs, i, arr) => {
+        const isLast = i === arr.length - 1;
+        // End of this bucket = start of next (or far future for the last one)
+        const be = arr[i + 1] || new Date(today.getTime() + 86400000 * 8);
+        // Last weekly bucket shows today's actual date instead of the Monday label
+        const label = isLast && period === 'week'
+          ? todayLabel
+          : period === 'week' ? weekLabel(bs) : monthLabel(bs);
+
+        // New go-lives IN this bucket
+        const inBucket = points.filter(p => p.date >= bs && p.date < be);
+        const newFacs    = inBucket.length;
+        const newTenants = new Set(inBucket.map(p => p.tenant)).size;
+
+        // Cumulative up to END of this bucket (includes all-time, not just window)
+        const cumAll     = points.filter(p => p.date < be);
+        const cumFacs    = cumAll.length;
+        const cumTenants = new Set(cumAll.map(p => p.tenant)).size;
+
+        return { label, newFacs, newTenants, cumFacs, cumTenants };
+      });
+  }
+
+  function renderAdoptionTrend(feat, period, btnEl) {
+    _trendPeriod[feat] = period;
+    const FEAT_COLOR = { b2c: '#1F87C2', b2b: '#4A934A', cc: '#9C27B0' };
+    const color = FEAT_COLOR[feat] || '#1F87C2';
+
+    // Toggle button styles
+    if (btnEl) {
+      const hdr = btnEl.closest('.card-header');
+      if (hdr) hdr.querySelectorAll('button').forEach(b => {
+        b.style.background = ''; b.style.color = '#1F87C2'; b.style.borderColor = '#E0E0E0';
+      });
+      btnEl.style.background = color; btnEl.style.color = '#fff'; btnEl.style.borderColor = color;
+    }
+
+    const bodyEl = document.getElementById(feat + '-trend-body');
+    if (!bodyEl) return;
+
+    const data = buildStartedTrend(feat, period);
+    if (!data.length) {
+      bodyEl.innerHTML = `<div style="text-align:center;color:var(--uc-secondary);padding:24px;font-size:13px">No go-live dates recorded yet. Tag entries as Started with a go-live date to see the trend.</div>`;
+      return;
+    }
+
+    const W=720, H=150, PL=28, PR=12, PT=14, PB=32;
+    const chartW = W - PL - PR, chartH = H - PT - PB;
+    const n = data.length;
+
+    const maxCum = Math.max(...data.map(d => Math.max(d.cumFacs, d.cumTenants)), 1);
+    const yS = v => PT + chartH - (v / maxCum) * chartH;
+    const xM = i => PL + (chartW / n) * i + (chartW / n) / 2;
+    const barW = Math.min((chartW / n) * 0.55, 40);
+
+    // Grid lines
+    const grid = [0.25, 0.5, 0.75, 1].map(p => {
+      const y = yS(maxCum * p), v = Math.round(maxCum * p);
+      return `<line x1="${PL}" y1="${y.toFixed(1)}" x2="${W-PR}" y2="${y.toFixed(1)}" stroke="#F0F0F0" stroke-width="1"/>
+              <text x="${(PL-3).toFixed(1)}" y="${(y+3).toFixed(1)}" font-size="8" fill="#BDBDBD" text-anchor="end">${v}</text>`;
+    }).join('');
+
+    // Bars = new facilities per period (background bars)
+    const bars = data.map((d, i) => {
+      const bh = Math.max((d.newFacs / maxCum) * chartH, d.newFacs > 0 ? 2 : 0);
+      const bx = xM(i) - barW / 2;
+      const by = yS(d.newFacs);
+      return `<rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh.toFixed(1)}" fill="${color}20" rx="2"/>
+              ${d.newFacs > 0 ? `<text x="${xM(i).toFixed(1)}" y="${(by - 3).toFixed(1)}" font-size="8" fill="${color}99" text-anchor="middle">+${d.newFacs}</text>` : ''}`;
+    }).join('');
+
+    // Cumulative facilities line
+    const facPts = data.map((d, i) => `${xM(i).toFixed(1)},${yS(d.cumFacs).toFixed(1)}`).join(' ');
+    const areaBase = `${xM(0).toFixed(1)},${(PT+chartH).toFixed(1)} ${facPts} ${xM(n-1).toFixed(1)},${(PT+chartH).toFixed(1)}`;
+
+    // Cumulative tenants line
+    const tenPts = data.map((d, i) => `${xM(i).toFixed(1)},${yS(d.cumTenants).toFixed(1)}`).join(' ');
+
+    // Dots + end-labels
+    const facDots = data.map((d, i) => {
+      const cx = xM(i), cy = yS(d.cumFacs);
+      const last = i === n - 1;
+      return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${last?4:3}" fill="${color}"/>
+              ${last ? `<text x="${cx.toFixed(1)}" y="${(cy-7).toFixed(1)}" font-size="9" fill="${color}" font-weight="700" text-anchor="middle">${d.cumFacs} wh</text>` : ''}`;
+    }).join('');
+
+    const tenDots = data.map((d, i) => {
+      const cx = xM(i), cy = yS(d.cumTenants);
+      const last = i === n - 1;
+      return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${last?4:3}" fill="#F57F17"/>
+              ${last ? `<text x="${cx.toFixed(1)}" y="${(cy-7).toFixed(1)}" font-size="9" fill="#F57F17" font-weight="700" text-anchor="middle">${d.cumTenants} clients</text>` : ''}`;
+    }).join('');
+
+    // X-axis labels (skip if crowded)
+    const skip = n > 10 ? Math.ceil(n / 8) : 1;
+    const xLabels = data.map((d, i) => i % skip === 0 || i === n-1
+      ? `<text x="${xM(i).toFixed(1)}" y="${(H-4).toFixed(1)}" font-size="9" fill="#9E9E9E" text-anchor="middle">${d.label}</text>`
+      : '').join('');
+
+    bodyEl.innerHTML = `
+      <div style="display:flex;gap:16px;align-items:center;font-size:11px;color:var(--uc-secondary);margin-bottom:6px;flex-wrap:wrap">
+        <span><span style="display:inline-block;width:12px;height:3px;background:${color};margin-right:4px;vertical-align:middle;border-radius:2px"></span>Cumulative warehouses</span>
+        <span><span style="display:inline-block;width:12px;height:3px;background:#F57F17;border-radius:2px;margin-right:4px;vertical-align:middle"></span>Cumulative tenants</span>
+        <span><span style="display:inline-block;width:12px;height:8px;background:${color}20;margin-right:4px;vertical-align:middle;border-radius:2px"></span>New per ${period}</span>
+      </div>
+      <svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" overflow="visible">
+        ${grid}
+        <polygon points="${areaBase}" fill="${color}08"/>
+        <polyline points="${facPts}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+        <polyline points="${tenPts}" fill="none" stroke="#F57F17" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="5,3"/>
+        ${bars}${facDots}${tenDots}${xLabels}
+      </svg>`;
+  }
+
+  /* ── GENERIC RENDER TABLE ──
+     Shows ALL sheet rows (base). CSM info overlaid where available.
+     Ghost rows appended for Redash facilities not yet in sheet.
+     Suggestion banner appears when search finds no sheet match.
+  ── */
+  function renderFeatureTable(feat, filterVal, searchVal) {
+    const allMerged = buildMergedRows(feat);
+    updateKPIsAndFunnel(feat, allMerged);
+
+    let rows = [...allMerged];
+
+    // Filter: active, inactive (matches refresh script logic), new (first appeared in latest snapshot)
+    if (filterVal && filterVal !== 'all') {
+      rows = rows.filter(r => {
+        if (filterVal === 'active')   return !r.isInactive;
+        if (filterVal === 'inactive') return r.isInactive === true;
+        if (filterVal === 'new')      return r.isNew === true;
+        return true;
+      });
+    }
+    // Search
+    if (searchVal) {
+      rows = rows.filter(r => (r.tenant + r.facility).toLowerCase().includes(searchVal));
+    }
+
+    const countEl = document.getElementById(feat+'-count');
+    if (countEl) {
+      if (searchVal && rows.length === 0) {
+        countEl.textContent = 'No results found';
+      } else {
+        countEl.textContent = `Showing ${rows.length} of ${allMerged.length} facilities`;
+      }
+    }
+
+    const tbody = document.getElementById(feat+'-tbody');
+    const suggestEl = document.getElementById(feat+'-suggest');
+    if (!tbody) return;
+    if (suggestEl) suggestEl.innerHTML = '';
+
+    // ── Render main tracked rows ──
+    tbody.innerHTML = rows.map((r, i) => {
+      const drrVal  = r.liveDRR;
+      const drrSrc  = Object.keys(redashDRR).length > 0 ? 'live' : 'sheet';
+      const drrCell = `<strong style="color:${drrSrc==='live'?'#1F87C2':'var(--uc-body-text)'}">${Math.round(drrVal).toLocaleString('en-IN')}</strong>
+                       <span style="font-size:10px;color:var(--uc-secondary);margin-left:2px">${drrSrc==='live'?'🔴 live':'📋 sheet'}</span>`;
+
+      // Stage: DRR-driven (ignores old CSM tags — source of truth is now the sheet)
+      const inactiveLbl = r.inactiveDays > 0
+        ? `⚫ Inactive · ${r.inactiveDays}d`
+        : '⚫ Inactive';
+      const stageCell = r.isNew
+        ? `<span class="badge badge-blue"  style="font-size:11px">🆕 New</span>`
+        : r.isInactive
+          ? `<span class="badge badge-grey" style="font-size:11px;white-space:nowrap" title="No picks for ${r.inactiveDays} consecutive day${r.inactiveDays!==1?'s':''}">${inactiveLbl}</span>`
+          : `<span class="badge badge-green" style="font-size:11px">🟢 Active</span>`;
+
+      const csmCell  = r.csm
+        ? `<span style="font-size:12px">${r.csm}</span>`
+        : `<span style="color:var(--uc-disabled);font-size:12px">—</span>`;
+
+      // Go-Live Date: first-seen date from backend; CSM-entered date as fallback
+      const startCell = r.configDate
+        ? `<span style="font-size:12px;color:var(--uc-secondary)">📋 ${r.configDate}</span>`
+        : r.startDate
+          ? `<span style="font-size:12px;color:var(--uc-secondary)">${r.startDate}</span>`
+          : `<span style="color:var(--uc-disabled);font-size:12px">—</span>`;
+
+      const notesCell = r.notes
+        ? `<span title="${r.notes.replace(/"/g,'&quot;')}" style="cursor:help;color:var(--uc-secondary);font-size:12px">${r.notes.slice(0,28)}${r.notes.length>28?'…':''}</span>`
+        : `<span style="color:var(--uc-disabled);font-size:12px">—</span>`;
+
+      const _te = r.tenant.replace(/'/g,"\\'"), _fe = r.facility.replace(/'/g,"\\'");
+      const actionCell = `<button class="btn-outlined" onclick="openDetailsFlyout('${_te}','${_fe}','${feat}')">📋 Details</button>`;
+
+      const rowBg = r.isNew      ? 'background:rgba(31,135,194,0.04)'
+                  : r.isInactive ? 'background:rgba(0,0,0,0.02)'
+                  :                '';
+
+      return `<tr style="${rowBg}">
+        <td style="color:var(--uc-secondary);width:28px">${i+1}</td>
+        <td style="font-weight:700">${r.tenant}</td>
+        <td style="color:var(--uc-secondary);font-size:12px">${r.facility}</td>
+        <td>${stageCell}</td>
+        <td>${csmCell}</td>
+        <td style="font-size:12px">${drrCell}</td>
+        <td>${startCell}</td>
+        <td>${notesCell}</td>
+        <td style="white-space:nowrap">${actionCell}</td>
+      </tr>`;
+    }).join('');
+
+    // ── Ghost rows: Redash facilities for visible tenants not yet in sheet ──
+    const { pairs } = getRedashPairs();
+    if (pairs.length > 0 && rows.length > 0) {
+      // Keys already tracked (full sheet, ignoring current filter/search)
+      const trackedKeys = new Set(allMerged.map(r => r.tenant.toLowerCase() + '::' + r.facility.toLowerCase()));
+      // Only show pending for tenants currently visible
+      const visibleTenants = new Set(rows.map(r => r.tenant.toLowerCase()));
+      const pending = pairs.filter(p =>
+        visibleTenants.has(p.tenant.toLowerCase()) &&
+        !trackedKeys.has(p.tenant.toLowerCase() + '::' + p.facility.toLowerCase())
+      );
+      if (pending.length > 0) {
+        tbody.innerHTML += pending.map(p => ghostRow(feat, p.tenant, p.facility)).join('');
+      }
+    }
+
+    // ── Suggestion banner: search returned 0 sheet rows — look in Redash ──
+    if (searchVal && rows.length === 0 && suggestEl) {
+      const matchingPairs = pairs.filter(p =>
+        (p.tenant + ' ' + p.facility).toLowerCase().includes(searchVal)
+      );
+      if (matchingPairs.length > 0) {
+        const tenantName = matchingPairs[0].tenant;
+        suggestEl.innerHTML = `<div class="suggest-banner">
+          💡 <span><strong>${tenantName}</strong> is in Uniware but not yet live on this feature.</span>
+        </div>`;
+        tbody.innerHTML = matchingPairs.map(p => ghostRow(feat, p.tenant, p.facility)).join('');
+        if (countEl) countEl.textContent = `${matchingPairs.length} facilit${matchingPairs.length===1?'y':'ies'} in Uniware — not yet live`;
+      }
+    }
+  }
+
+
+
+  /* ── FILTER STATE ── */
+  let b2cFilter = 'all', b2cSearch = '';
+  let b2bFilter = 'all', b2bSearch = '';
+  let ccFilter  = 'all', ccSearch  = '';
+
+  function renderB2CTable() { renderFeatureTable('b2c', b2cFilter, b2cSearch); }
+  function renderB2BTable() { renderFeatureTable('b2b', b2bFilter, b2bSearch); }
+  function renderCCTable()  { renderFeatureTable('cc',  ccFilter,  ccSearch);  }
+
+  function filterB2C(s,el) { document.querySelectorAll('#feat-b2c .rag-chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); b2cFilter=s; renderB2CTable(); }
+  function filterB2B(s,el) { document.querySelectorAll('#feat-b2b .rag-chip').forEach(c=>c.classList.remove('active')); el.classList.add('active'); b2bFilter=s; renderB2BTable(); }
+  function filterCC(s,el)  { document.querySelectorAll('#feat-cc .rag-chip').forEach(c=>c.classList.remove('active'));  el.classList.add('active'); ccFilter=s;  renderCCTable();  }
+
+  function searchB2C(q) { b2cSearch=q.toLowerCase(); renderB2CTable(); }
+  function searchB2B(q) { b2bSearch=q.toLowerCase(); renderB2BTable(); }
+  function searchCC(q)  { ccSearch=q.toLowerCase();  renderCCTable();  }
+
+  function searchTenants(q){ searchFacilities(q); }
+
+  /* ── ENTRY FLYOUT / SEARCHABLE SELECT ── */
+  let currentEditId = null;
+  let tenantOptions   = [];  // [{value, label}] full list
+  let facilityOptions = [];  // [{value, label}] for selected tenant
+
+  /* ── Searchable select helpers ── */
+  function openSsList(listId) {
+    const list = document.getElementById(listId);
+    if (list) list.classList.add('open');
+  }
+  function closeSsListDelay(listId) {
+    setTimeout(() => {
+      const list = document.getElementById(listId);
+      if (list) list.classList.remove('open');
+    }, 160);
+  }
+  function renderSsList(listId, options) {
+    const list = document.getElementById(listId);
+    if (!list) return;
+    if (!options.length) {
+      list.innerHTML = `<div class="ss-option ss-hint">No matches — just type to add manually</div>`;
+    } else {
+      const isTenant = listId === 'em-tenant-list';
+      const fn = isTenant ? 'selectTenantOption' : 'selectFacilityOption';
+      list.innerHTML = options.slice(0, 100).map(o =>
+        `<div class="ss-option" onmousedown="${fn}('${o.value.replace(/'/g,"\\'").replace(/"/g,'&quot;')}','${o.label.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">${o.label}</div>`
+      ).join('');
+    }
+  }
+  function selectTenantOption(value, label) {
+    const si = document.getElementById('em-tenant-search');
+    const hi = document.getElementById('em-tenant');
+    if (si) { si.value = label; si.classList.add('has-value'); }
+    if (hi) hi.value = value;
+    // Load facilities for this tenant
+    loadFacilityOptions(value);
+    // Update facility placeholder
+    const fs = document.getElementById('em-facility-search');
+    if (fs) fs.placeholder = 'Search facility…';
+  }
+  function selectFacilityOption(value, label) {
+    const si = document.getElementById('em-facility-search');
+    const hi = document.getElementById('em-facility');
+    if (si) { si.value = label; si.classList.add('has-value'); }
+    if (hi) hi.value = value;
+  }
+  function filterTenantList(val) {
+    // Clear selection when user retypes
+    const hi = document.getElementById('em-tenant');
+    if (hi) hi.value = '';
+    const si = document.getElementById('em-tenant-search');
+    if (si) si.classList.remove('has-value');
+    // Clear facility
+    clearFacilityField();
+    const filtered = val ? tenantOptions.filter(o => o.label.toLowerCase().includes(val.toLowerCase())) : tenantOptions;
+    renderSsList('em-tenant-list', filtered);
+    openSsList('em-tenant-list');
+  }
+  function filterFacilityList(val) {
+    const hi = document.getElementById('em-facility');
+    if (hi) hi.value = '';
+    const si = document.getElementById('em-facility-search');
+    if (si) si.classList.remove('has-value');
+    const filtered = val ? facilityOptions.filter(o => o.label.toLowerCase().includes(val.toLowerCase())) : facilityOptions;
+    renderSsList('em-facility-list', filtered);
+    openSsList('em-facility-list');
+  }
+  function clearFacilityField() {
+    const fs = document.getElementById('em-facility-search');
+    if (fs) { fs.value = ''; fs.classList.remove('has-value'); fs.placeholder = 'Select a tenant first…'; }
+    const fh = document.getElementById('em-facility');
+    if (fh) fh.value = '';
+    facilityOptions = [];
+    renderSsList('em-facility-list', []);
+  }
+  function loadFacilityOptions(tenant) {
+    let facs = [];
+    if (redashRows.length > 0) {
+      const cols = Object.keys(redashRows[0] || {});
+      const tCol = cols.find(c => c.toLowerCase().includes('tenant') || c.toLowerCase().includes('client'));
+      const fCol = cols.find(c => c.toLowerCase().includes('facility') || c.toLowerCase().includes('warehouse'));
+      if (tCol && fCol) {
+        facs = [...new Set(
+          redashRows.filter(r => (r[tCol]||'').toLowerCase() === tenant.toLowerCase()).map(r => r[fCol]).filter(Boolean)
+        )].sort();
+      }
+    }
+    if (facs.length === 0) {
+      facs = [...new Set(facilities.filter(f => f.tenant.toLowerCase() === tenant.toLowerCase()).map(f => f.facility))].sort();
+    }
+    facilityOptions = facs.map(f => ({ value: f, label: f }));
+    renderSsList('em-facility-list', facilityOptions);
+  }
+  function updateTenantDropdown() {
+    let tenants = [];
+    if (redashRows.length > 0) {
+      const cols = Object.keys(redashRows[0] || {});
+      const tCol = cols.find(c => c.toLowerCase().includes('tenant') || c.toLowerCase().includes('client'));
+      if (tCol) tenants = [...new Set(redashRows.map(r => r[tCol]).filter(Boolean))].sort();
+    }
+    if (tenants.length === 0) tenants = [...new Set(facilities.map(f => f.tenant))].sort();
+    tenantOptions = tenants.map(t => ({ value: t, label: t }));
+    renderSsList('em-tenant-list', tenantOptions);
+  }
+  // Keep for feature onchange compatibility
+  function updateFacilityDropdown() { updateTenantDropdown(); }
+
+  /* ── EXPORT CSV ── (exports ALL sheet rows + CSM overlay, not just entered ones) */
+  function exportCSV(feat) {
+    const merged = buildMergedRows(feat);
+    if (!merged.length) { showToast('ℹ No data', 'No facilities found for this feature.', false); return; }
+    const hdr = ['#','Tenant','Facility','DRR (Sheet)','DRR (Live)','Stage','CSM','Start Date','Notes'];
+    const csvRows = merged.map((r,i) => {
+      const liveDRR = r.liveDRR !== r.sheetDRR ? Math.round(r.liveDRR) : '';
+      return [i+1, r.tenant, r.facility, r.sheetDRR, liveDRR,
+              r.stage||'', r.csm||'', r.startDate||'',
+              (r.notes||'').replace(/,/g,';')].join(',');
+    });
+    const blob = new Blob([[hdr.join(','), ...csvRows].join('\n')], { type:'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `HHD_${feat.toUpperCase()}_Adoption_${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     ADOPTION SUMMARY — Google Sheet driven
+     Reads from "Adoption Summary" tab (populated by the refresh Apps Script).
+     Each feature's panel-0 displays its own card from this data.
+  ════════════════════════════════════════════════════════════════ */
+  let _adoptionSummary  = null; // cached array of module objects from sheet
+  let _backendDataLoaded = false; // true once applyBackendData has run
+
+  const TAM_LABELS  = { b2c: '6,00,000', b2b: '3,00,000', cc: '10,000' };
+  const DRR_UNIT    = { b2c: 'picks',     b2b: 'picks',     cc: 'count scans' };
+  const FEAT_STATUS_COLOR = {
+    'Under Takeoff': 'background:#FFF3E0;color:#E65100',
+    'Beta Stage':    'background:#F3E5F5;color:#7B1FA2',
+    'Live':          'background:#E8F5E9;color:#2E7D32',
+  };
+  const FEAT_COLOR = { b2c: '#1F87C2', b2b: '#4A934A', cc: '#9C27B0' };
+
+  async function fetchAdoptionSummary() {
+    if (!SHEET_API_URL) { renderSummaryCard(activeFeature); return; }
+    try {
+      const result = await sheetFetch({ action: 'read_adoption_summary' });
+      if (result && Array.isArray(result.modules) && result.modules.length) {
+        _adoptionSummary = result.modules;
+        // Render for whichever feature is currently active
+        renderSummaryCard(activeFeature);
+      } else {
+        renderSummaryCard(activeFeature); // will show "not available" state
+      }
+    } catch(e) {
+      console.warn('[Summary] fetch failed:', e);
+      renderSummaryCard(activeFeature);
+    }
+  }
+
+  function renderSummaryCard(feat) {
+    const el = document.getElementById(feat + '-sheet-summary');
+    if (!el) return;
+
+    // ── Loading state ──────────────────────────────────────────────────────────
+    if (!_adoptionSummary) {
+      el.innerHTML = `<div style="background:var(--uc-white);border:1px solid var(--uc-border);border-radius:8px;padding:22px;text-align:center;color:var(--uc-secondary);font-size:13px">⏳ Loading live data from Google Sheet…</div>`;
+      return;
+    }
+
+    const data = _adoptionSummary.find(m => m.key === feat);
+
+    // ── Not-yet-refreshed state ────────────────────────────────────────────────
+    if (!data || !data.name) {
+      el.innerHTML = `<div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:16px;display:flex;align-items:center;gap:10px;font-size:13px;color:#5D4037;margin-bottom:0">
+        <span style="font-size:18px">⚠</span>
+        <span>Sheet data not available yet for this module. Open the adoption Google Sheet and run <strong>Adoption Automation → Refresh All</strong> from the menu, then reload this page.</span>
+      </div>`;
+      return;
+    }
+
+    const color    = FEAT_COLOR[feat] || '#1F87C2';
+    const tam      = TAM_LABELS[feat] || '—';
+    const unit     = DRR_UNIT[feat]   || 'picks';
+    const statClr  = FEAT_STATUS_COLOR[data.status] || 'background:#F5F5F5;color:#424242';
+
+    // ── Parse numbers ──────────────────────────────────────────────────────────
+    const drrRaw = parseInt((data.avgDRR || '').replace(/[^0-9]/g, '')) || 0;
+    const drrFmt = drrRaw ? drrRaw.toLocaleString('en-IN') : '—';
+    const newT   = parseInt(data.newTenants) || 0;
+    const newW   = parseInt(data.newWh)      || 0;
+    // Inactive count: use live backend data (2-day rule) when available,
+    // falling back to the sheet's Inactive_Tenants count.
+    // This prevents the race condition where fetchAdoptionSummary resolves
+    // after fetchBackendData and overwrites the correct count with 0.
+    const inactiveN = _backendDataLoaded
+      ? facilities.filter(f => f['_inactive_' + feat] === true).length
+      : (parseInt(data.inactive) || 0);
+
+    // ── Build card ─────────────────────────────────────────────────────────────
+    el.innerHTML = `
+      <div style="background:var(--uc-white);border:1px solid var(--uc-border);border-radius:8px;margin-bottom:20px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.06)">
+
+        <!-- Header strip -->
+        <div style="padding:10px 16px;background:#FAFAFA;border-bottom:1px solid var(--uc-border);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:13px;font-weight:700;color:var(--uc-body-text)">${data.name}</span>
+          <span style="font-size:11px;padding:2px 9px;border-radius:4px;font-weight:700;${statClr}">${data.status}</span>
+          <span style="margin-left:auto;font-size:11px;color:var(--uc-secondary)">
+            🔄 Last refreshed: <strong style="color:var(--uc-body-text)">${data.lastRefresh || '—'}</strong>
+          </span>
+        </div>
+
+        <!-- Stats row — 5 columns -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;gap:0">
+
+          <!-- Active Tenants — clickable → details tab, Started filter -->
+          <div onclick="goToDetails('active')" title="View active tenants"
+               style="padding:16px 18px;border-right:1px solid var(--uc-border);cursor:pointer;transition:background 0.15s"
+               onmouseenter="this.style.background='#F5F9FF'" onmouseleave="this.style.background=''">
+            <div style="font-size:10px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px">Active Tenants</div>
+            <div style="font-size:30px;font-weight:700;color:${color};line-height:1.1;text-decoration:underline;text-underline-offset:4px">${data.tenants || '—'}</div>
+            ${newT > 0
+              ? `<div style="font-size:11px;color:#2E7D32;margin-top:6px;font-weight:600;cursor:pointer" onclick="event.stopPropagation();goToDetails('new')" title="View new tenants">
+                   <span style="background:#E8F5E9;border-radius:4px;padding:1px 6px">+${newT} new · last 7 days ↗</span>
+                 </div>`
+              : `<div style="font-size:11px;color:var(--uc-secondary);margin-top:6px">No new adopters</div>`}
+          </div>
+
+          <!-- Active Warehouses — clickable → details tab, active -->
+          <div onclick="goToDetails('active')" title="View active warehouses"
+               style="padding:16px 18px;border-right:1px solid var(--uc-border);cursor:pointer;transition:background 0.15s"
+               onmouseenter="this.style.background='#F5F9FF'" onmouseleave="this.style.background=''">
+            <div style="font-size:10px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px">Active Warehouses</div>
+            <div style="font-size:30px;font-weight:700;color:${color};line-height:1.1;text-decoration:underline;text-underline-offset:4px">${data.warehouses || '—'}</div>
+            ${newW > 0
+              ? `<div style="font-size:11px;color:#2E7D32;margin-top:6px;font-weight:600;cursor:pointer" onclick="event.stopPropagation();goToDetails('new')" title="View new warehouses">
+                   <span style="background:#E8F5E9;border-radius:4px;padding:1px 6px">+${newW} new · last 7 days ↗</span>
+                 </div>`
+              : `<div style="font-size:11px;color:var(--uc-secondary);margin-top:6px">No new adopters</div>`}
+          </div>
+
+          <!-- Avg DRR — non-clickable metric -->
+          <div style="padding:16px 18px;border-right:1px solid var(--uc-border)">
+            <div style="font-size:10px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px">Avg Daily ${unit === 'picks' ? 'Picks' : 'Counts'}</div>
+            <div style="font-size:30px;font-weight:700;color:${color};line-height:1.1">${drrFmt}</div>
+            <div style="font-size:11px;color:var(--uc-secondary);margin-top:6px">${unit}/day · 7-day avg</div>
+          </div>
+
+          <!-- TAM Coverage — non-clickable metric -->
+          <div style="padding:16px 18px;border-right:1px solid var(--uc-border)">
+            <div style="font-size:10px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px">TAM Coverage</div>
+            <div style="font-size:30px;font-weight:700;color:${color};line-height:1.1">${data.tamPct || '—'}</div>
+            <div style="font-size:11px;color:var(--uc-secondary);margin-top:6px">of ${tam}/day target</div>
+          </div>
+
+          <!-- Inactive WH — clickable → details tab; count updated by applyBackendData -->
+          <div id="${feat}-summary-inactive-cell" onclick="goToDetails('inactive')" title="View inactive warehouses"
+               style="padding:16px 18px;background:${inactiveN > 0 ? '#FFFDE7' : 'var(--uc-white)'};cursor:pointer;transition:background 0.15s"
+               onmouseenter="this.style.background='${inactiveN > 0 ? '#FFF8C5' : '#F5F9FF'}'" onmouseleave="this.style.background='${inactiveN > 0 ? '#FFFDE7' : 'var(--uc-white)'}'">
+            <div style="font-size:10px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px">⚠ Inactive WH</div>
+            <div id="${feat}-summary-inactive-num" style="font-size:30px;font-weight:700;color:${inactiveN > 0 ? '#F57F17' : '#4A934A'};line-height:1.1;${inactiveN > 0 ? 'text-decoration:underline;text-underline-offset:4px' : ''}">${inactiveN > 0 ? inactiveN : '✓ 0'}</div>
+            <div id="${feat}-summary-inactive-sub" style="font-size:11px;color:var(--uc-secondary);margin-top:6px">${inactiveN > 0 ? 'zero activity · follow up' : 'all warehouses active'}</div>
+          </div>
+
+        </div>
+      </div>`;
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     BACKEND DATA — replaces hardcoded facilities[] with live data
+     Reads Backend_Data_B2B/B2C/Cycle sheets (written by refresh script).
+     Each facility gets: DRR from latest snapshot, config = first-ever appearance.
+  ════════════════════════════════════════════════════════════════ */
+  async function fetchBackendData() {
+    if (!SHEET_API_URL) return;
+    try {
+      const result = await sheetFetch({ action: 'read_backend_data' });
+      if (result && result.features) applyBackendData(result.features);
+    } catch(e) {
+      console.warn('[BackendData] fetch failed:', e);
+    }
+  }
+
+  function applyBackendData(features) {
+    // Capture original go-live dates from the existing facilities array BEFORE
+    // we replace it. The hardcoded array has the real go-live dates (e.g. 31-Mar-2026)
+    // whereas the backend's firstSeen is just when we started tracking (e.g. 23-Apr-2026).
+    // We always prefer the EARLIER of the two so the trend chart stays accurate.
+    const originalConfig = {};
+    facilities.forEach(f => {
+      if (f.config) {
+        const k = f.tenant.toLowerCase() + '||' + f.facility.toLowerCase();
+        originalConfig[k] = f.config;
+      }
+    });
+
+    // Rebuild facilities array from live backend data.
+    const map = {}; // "tenant||facility" → facilities entry
+
+    ['b2c', 'b2b', 'cc'].forEach(feat => {
+      const rows = features[feat] || [];
+      rows.forEach(r => {
+        if (!r.tenant || !r.facility) return;
+        const k = r.tenant.toLowerCase() + '||' + r.facility.toLowerCase();
+
+        if (!map[k]) {
+          // Pick the earlier of: original hardcoded go-live date vs backend firstSeen.
+          // Must use parseDashDate() — string comparison of "dd-MMM-yyyy" is NOT chronological.
+          const orig    = originalConfig[k] || '';
+          const backend = r.config || '';
+          const origDate    = orig    ? parseDashDate(orig)    : null;
+          const backendDate = backend ? parseDashDate(backend) : null;
+          const config = (origDate && backendDate)
+            ? (origDate <= backendDate ? orig : backend)
+            : (orig || backend);
+          map[k] = {
+            tenant: r.tenant, facility: r.facility,
+            b2c: 0, b2b: 0, cc: 0, config,
+            _in_b2c: false, _in_b2b: false, _in_cc: false,
+          };
+        }
+
+        map[k][feat]                    = r.drr;
+        map[k]['_in_'          + feat]  = true;
+        map[k]['_new_'         + feat]  = r.isNew       || false;
+        map[k]['_inactive_'    + feat]  = r.isInactive  || false;
+        map[k]['_inactiveDays_'+ feat]  = r.inactiveDays || 0;
+
+        // Keep the earliest config date across all features (proper date comparison)
+        const rc = r.config || '';
+        if (rc) {
+          const rcDate  = parseDashDate(rc);
+          const curDate = map[k].config ? parseDashDate(map[k].config) : null;
+          if (rcDate && (!curDate || rcDate < curDate)) map[k].config = rc;
+        }
+      });
+    });
+
+    // Replace the facilities array contents in-place
+    facilities.length = 0;
+    Object.values(map).forEach(f => facilities.push(f));
+
+    _backendDataLoaded = true;
+
+    // Re-render tables with live data
+    renderB2CTable(); renderB2BTable(); renderCCTable();
+
+    // Re-render the active feature's summary card so inactiveN is now computed
+    // from the live backend data instead of the sheet's Inactive_Tenants tab.
+    // This also handles the race where fetchAdoptionSummary resolved first.
+    renderSummaryCard(activeFeature);
+    console.log('[BackendData] Loaded', facilities.length, 'facilities from sheet');
+  }
+
+  // Overwrite the inactive WH cell in each summary card with the count
+  // derived from the live backend data (2-day rule), not the sheet's Inactive_Tenants tab.
+  function updateSummaryInactiveCounts() {
+    ['b2c', 'b2b', 'cc'].forEach(feat => {
+      const count   = facilities.filter(f => f['_inactive_' + feat] === true).length;
+      const numEl   = document.getElementById(feat + '-summary-inactive-num');
+      const subEl   = document.getElementById(feat + '-summary-inactive-sub');
+      const cellEl  = document.getElementById(feat + '-summary-inactive-cell');
+      if (!numEl) return; // card not rendered yet
+      numEl.textContent   = count > 0 ? count : '✓ 0';
+      numEl.style.color   = count > 0 ? '#F57F17' : '#4A934A';
+      numEl.style.textDecoration = count > 0 ? 'underline' : 'none';
+      if (subEl)  subEl.textContent         = count > 0 ? 'zero activity · follow up' : 'all warehouses active';
+      if (cellEl) cellEl.style.background   = count > 0 ? '#FFFDE7' : 'var(--uc-white)';
+    });
+  }
+
+  /* ════════════════════════════════════════════════════════════════
+     GOOGLE AUTH — restricts access to @unicommerce.com accounts only
+     Replace GOOGLE_CLIENT_ID with your actual Client ID from Google Cloud.
+  ════════════════════════════════════════════════════════════════ */
+  const GOOGLE_CLIENT_ID  = '82244520191-ge2p06l0lphrsdip2cf6kokmf8ku9sof.apps.googleusercontent.com';
+  const ALLOWED_DOMAIN    = 'unicommerce.com';
+
+  function initAuth() {
+    // Check for existing valid session
+    try {
+      const stored = sessionStorage.getItem('hhd_gauth');
+      if (stored) {
+        const user = JSON.parse(stored);
+        if (user.email && user.email.endsWith('@' + ALLOWED_DOMAIN)) {
+          grantAccess(user); return;
+        }
+      }
+    } catch(_) {}
+    showLoginForm();
+  }
+
+  function showLoginForm() {
+    document.getElementById('auth-overlay').innerHTML = `
+      <div style="background:#fff;border-radius:16px;padding:48px 40px;width:380px;
+                  box-shadow:0 8px 40px rgba(0,0,0,0.12);text-align:center">
+        <div style="font-size:36px;margin-bottom:12px">📦</div>
+        <div style="font-weight:700;font-size:20px;color:#212121;margin-bottom:6px">
+          HHD Adoption Dashboard
+        </div>
+        <div style="color:#757575;font-size:13px;margin-bottom:8px">Unicommerce Internal</div>
+        <div style="color:#BDBDBD;font-size:12px;margin-bottom:32px">
+          Only @unicommerce.com accounts have access
+        </div>
+        <div id="google-signin-btn" style="display:flex;justify-content:center;margin-bottom:16px"></div>
+        <div id="auth-error"
+             style="display:none;color:#AD2820;font-size:12px;padding:10px 14px;
+                    background:#FFEBEE;border-radius:8px;margin-top:8px"></div>
+      </div>`;
+
+    const tryRender = () => {
+      if (window.google && google.accounts && google.accounts.id) {
+        google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback:  handleCredential,
+          auto_select: false,
+        });
+        google.accounts.id.renderButton(
+          document.getElementById('google-signin-btn'),
+          { theme: 'outline', size: 'large', text: 'signin_with', width: 300 }
+        );
+      } else {
+        setTimeout(tryRender, 150);
+      }
+    };
+    tryRender();
+  }
+
+  function handleCredential(response) {
+    try {
+      const payload = JSON.parse(atob(response.credential.split('.')[1]));
+      const email   = (payload.email || '').toLowerCase();
+      if (email.endsWith('@' + ALLOWED_DOMAIN)) {
+        const user = { email, name: payload.name || email.split('@')[0] };
+        sessionStorage.setItem('hhd_gauth', JSON.stringify(user));
+        grantAccess(user);
+      } else {
+        const errEl = document.getElementById('auth-error');
+        if (errEl) {
+          errEl.style.display = 'block';
+          errEl.textContent   = `Access denied. Only @${ALLOWED_DOMAIN} accounts are allowed.`;
+        }
+      }
+    } catch(e) { console.error('Auth error', e); }
+  }
+
+  function grantAccess(user) {
+    // Remove the auth overlay — dashboard becomes visible
+    const overlay = document.getElementById('auth-overlay');
+    if (overlay) overlay.remove();
+    // Update avatar initials with signed-in user
+    const avatar = document.querySelector('.avatar');
+    if (avatar) {
+      const initials = (user.name || user.email)
+        .split(/[\s@]+/).map(p => p[0]).join('').substring(0, 2).toUpperCase();
+      avatar.textContent = initials;
+      avatar.title       = user.email;
+    }
+  }
+
+  // Run auth check when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAuth);
+  } else {
+    initAuth();
+  }
+
+  /* ── INIT ── */
+  renderB2CTable();
+  renderB2BTable();
+  renderCCTable();
+  loadRedashData();
+  loadTenantFacilityData();
+  syncFromSheet();           // pull CSM entries → merge into localStorage → re-render
+  syncIssuesFromSheet();     // pull tenant issues → merge into localStorage
+  fetchAdoptionSummary();    // pull live summary from Adoption Summary sheet
+  fetchBackendData();        // replace hardcoded facilities[] with live backend data
+</script>
+</body>
+</html>
