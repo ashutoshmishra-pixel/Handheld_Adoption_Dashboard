@@ -3120,93 +3120,87 @@
   // ── Inline exclusion CTA (no modal) ──────────────────────────────────────────
   // When "Exclude" is clicked the button row expands inline with reason + confirm.
 
+  // Global state for inline exclusion — avoids ALL string-escaping in onclick attrs
+  let _excTenant = '', _excFacility = '', _excFeat = '', _excCellId = '';
+
   function triggerExclude(tenant, facility, feat, cellId) {
     const authRaw = sessionStorage.getItem('hhd_gauth');
     let userEmail = '';
-    try { userEmail = JSON.parse(authRaw || '{}').email || ''; } catch(_) {}
+    try { userEmail = JSON.parse(authRaw || '{}').email || ''; } catch(e) {}
 
     if (!EXCLUDE_ALLOWED.includes(userEmail.toLowerCase())) {
-      showToast('🔒 Access Restricted', 'Please connect with Product to change facility type.', true);
+      showToast('\uD83D\uDD12 Access Restricted', 'Please connect with Product to change facility type.', true);
       return;
     }
 
     const cell = document.getElementById(cellId);
     if (!cell) return;
 
-    // Build inline reason selector inside the cell
-    const te = tenant.replace(/'/g,"\\'"), fe = facility.replace(/'/g,"\\'");
-    const reasonOpts = EXCLUDE_REASONS.map(r =>
-      `<span onclick="this.parentNode.querySelectorAll('span.exc-opt').forEach(s=>s.style.background='#F5F5F5');this.style.background='#E3F2FD';this.dataset.selected='1'"
-             class="exc-opt" data-reason="${r}"
-             style="display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;cursor:pointer;background:#F5F5F5;font-weight:600;border:1px solid #E0E0E0"
-             >${r}</span>`
-    ).join('');
+    // Store context in globals — buttons use parameterless calls
+    _excTenant = tenant; _excFacility = facility;
+    _excFeat   = feat;   _excCellId   = cellId;
 
-    cell.innerHTML = \`
-      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-        <button class="btn-outlined" onclick="openDetailsFlyout('\${te}','\${fe}','\${feat}')">📋 Details</button>
-        <div style="display:flex;align-items:center;gap:5px;padding:4px 8px;background:#FFF8E1;border:1px solid #FFE082;border-radius:6px;flex-wrap:wrap">
-          \${reasonOpts}
-          <button onclick="confirmInlineExclusion('\${te}','\${fe}','\${feat}',this)"
-            style="padding:3px 10px;background:#E65100;color:white;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">
-            ✓ Confirm
-          </button>
-          <button onclick="cancelExclude('\${cellId}','\${te}','\${fe}','\${feat}')"
-            style="padding:3px 8px;background:none;border:1px solid #E0E0E0;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit">
-            ✕
-          </button>
-        </div>
-      </div>\`;
+    const reasonOpts = EXCLUDE_REASONS.map(r => {
+      const sel = r === EXCLUDE_REASONS[0] ? 'background:#E3F2FD;border-color:#1F87C2' : 'background:#F5F5F5';
+      return '<span class="exc-opt" data-reason="' + r + '" ' +
+        'onclick="document.querySelectorAll(\'.exc-opt\').forEach(function(s){s.style.cssText=\'background:#F5F5F5;border:1px solid #E0E0E0;display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600\'});this.style.background=\'#E3F2FD\';this.style.borderColor=\'#1F87C2\'" ' +
+        'style="' + sel + ';display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;cursor:pointer;font-weight:600;border:1px solid #E0E0E0">' +
+        r + '</span>';
+    }).join('');
 
-    // Auto-select the first reason
+    cell.innerHTML =
+      '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">' +
+        '<button class="btn-outlined" onclick="openDetailsFlyout(_excTenant,_excFacility,_excFeat)">\uD83D\uDCCB Details</button>' +
+        '<div style="display:flex;align-items:center;gap:5px;padding:4px 8px;background:#FFF8E1;border:1px solid #FFE082;border-radius:6px;flex-wrap:wrap">' +
+          reasonOpts +
+          '<button onclick="doConfirmExclude()" ' +
+            'style="padding:3px 10px;background:#E65100;color:white;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">' +
+            '\u2713 Confirm' +
+          '</button>' +
+          '<button onclick="doCancelExclude()" ' +
+            'style="padding:3px 8px;background:none;border:1px solid #E0E0E0;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit">' +
+            '\u2715' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+
     const firstOpt = cell.querySelector('.exc-opt');
-    if (firstOpt) { firstOpt.style.background = '#E3F2FD'; firstOpt.dataset.selected = '1'; }
+    if (firstOpt) firstOpt.style.background = '#E3F2FD';
   }
 
-  function confirmInlineExclusion(tenant, facility, feat, btn) {
+  function doConfirmExclude() {
     const authRaw = sessionStorage.getItem('hhd_gauth');
     let userEmail = '';
-    try { userEmail = JSON.parse(authRaw || '{}').email || ''; } catch(_) {}
+    try { userEmail = JSON.parse(authRaw || '{}').email || ''; } catch(e) {}
 
-    // Find selected reason
-    const cell = btn.closest('td');
-    const selectedOpt = cell?.querySelector('.exc-opt[data-selected="1"]');
-    const reason = selectedOpt?.dataset.reason || EXCLUDE_REASONS[0];
+    const cell = document.getElementById(_excCellId);
+    const selectedOpt = cell ? cell.querySelector('.exc-opt[style*="#E3F2FD"]') : null;
+    const reason = (selectedOpt && selectedOpt.dataset.reason) || EXCLUDE_REASONS[0];
 
-    const all = loadExclusions().filter(e =>
-      !(e.feat === feat &&
-        e.tenant.toLowerCase()   === tenant.toLowerCase() &&
-        e.facility.toLowerCase() === facility.toLowerCase())
-    );
-    all.push({ feat, tenant, facility, reason, excludedBy: userEmail, excludedAt: Date.now() });
+    const all = loadExclusions().filter(function(e) {
+      return !(e.feat === _excFeat &&
+               e.tenant.toLowerCase()   === _excTenant.toLowerCase() &&
+               e.facility.toLowerCase() === _excFacility.toLowerCase());
+    });
+    all.push({ feat: _excFeat, tenant: _excTenant, facility: _excFacility,
+               reason: reason, excludedBy: userEmail, excludedAt: Date.now() });
     saveExclusions(all);
-    showToast('✅ Excluded', \`\${tenant} · \${facility} marked as \${reason}\`, false);
+    showToast('Excluded', _excTenant + ' marked as ' + reason, false);
+    _excTenant = ''; _excFacility = ''; _excFeat = ''; _excCellId = '';
     renderB2CTable(); renderB2BTable(); renderCCTable();
     updateSummaryInactiveCounts();
   }
 
-  function cancelExclude(cellId, tenant, facility, feat) {
-    const cell = document.getElementById(cellId);
+  function doCancelExclude() {
+    const cell = document.getElementById(_excCellId);
     if (!cell) return;
-    const te = tenant.replace(/'/g,"\\'"), fe = facility.replace(/'/g,"\\'");
-    cell.innerHTML = \`
-      <button class="btn-outlined" onclick="openDetailsFlyout('\${te}','\${fe}','\${feat}')">📋 Details</button>
-      <button onclick="triggerExclude('\${te}','\${fe}','\${feat}','\${cellId}')"
-        style="margin-left:6px;padding:3px 9px;font-size:11px;border:1px solid #E0E0E0;
-               background:#FAFAFA;border-radius:5px;cursor:pointer;color:#757575;font-family:inherit">
-        🚫 Exclude
-      </button>\`;
-  }
-
-  function removeExclusion(tenant, facility, feat) {
-    saveExclusions(loadExclusions().filter(e =>
-      !(e.feat === feat &&
-        e.tenant.toLowerCase()   === tenant.toLowerCase() &&
-        e.facility.toLowerCase() === facility.toLowerCase())
-    ));
-    showToast('↩ Inclusion Restored', `${tenant} · ${facility} will now appear in inactive list`, false);
-    renderB2CTable(); renderB2BTable(); renderCCTable();
-    updateSummaryInactiveCounts();
+    // Restore the original button state
+    cell.innerHTML =
+      '<button class="btn-outlined" onclick="openDetailsFlyout(_excTenant,_excFacility,_excFeat)">\uD83D\uDCCB Details</button> ' +
+      '<button onclick="triggerExclude(_excTenant,_excFacility,_excFeat,\'' + _excCellId + '\')" ' +
+        'style="padding:3px 9px;font-size:11px;border:1px solid #E0E0E0;background:#FAFAFA;border-radius:5px;cursor:pointer;color:#757575;font-family:inherit">' +
+        '\uD83D\uDEAB Exclude' +
+      '</button>';
   }
 
   // Overwrite the inactive WH cell in each summary card with the count
