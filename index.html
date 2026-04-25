@@ -774,7 +774,7 @@
         <div class="uc-table-wrap">
           <table class="uc-table">
             <thead>
-              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th>CSM</th><th>DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
+              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th>CSM</th><th class="drr-col">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
             </thead>
             <tbody id="b2c-tbody"></tbody>
           </table>
@@ -1005,7 +1005,7 @@
         <div class="uc-table-wrap">
           <table class="uc-table">
             <thead>
-              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th>CSM</th><th>DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
+              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th>CSM</th><th class="drr-col">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
             </thead>
             <tbody id="b2b-tbody"></tbody>
           </table>
@@ -1132,7 +1132,7 @@
         <div class="uc-table-wrap">
           <table class="uc-table">
             <thead>
-              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th>CSM</th><th>DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
+              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th>CSM</th><th class="drr-col">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
             </thead>
             <tbody id="cc-tbody"></tbody>
           </table>
@@ -2559,6 +2559,10 @@
     if (!tbody) return;
     if (suggestEl) suggestEl.innerHTML = '';
 
+    // Hide/show DRR column header based on filter
+    const drrTh = tbody.closest('table')?.querySelector('th.drr-col');
+    if (drrTh) drrTh.style.display = filterVal === 'inactive' ? 'none' : '';
+
     // ── Render main tracked rows ──
     tbody.innerHTML = rows.map((r, i) => {
       const drrVal  = r.liveDRR;
@@ -2604,7 +2608,7 @@
         <td style="color:var(--uc-secondary);font-size:12px">${r.facility}</td>
         <td>${stageCell}</td>
         <td>${csmCell}</td>
-        <td style="font-size:12px">${drrCell}</td>
+        ${filterVal !== 'inactive' ? `<td style="font-size:12px">${drrCell}</td>` : ''}
         <td>${startCell}</td>
         <td>${notesCell}</td>
         <td style="white-space:nowrap">${actionCell}</td>
