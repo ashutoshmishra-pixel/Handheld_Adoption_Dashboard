@@ -764,6 +764,10 @@
             <div class="rag-chip" onclick="filterB2C('inactive',this)">⚫ Inactive</div>
             <div class="rag-chip" onclick="filterB2C('new',this)">🆕 New (7 days)</div>
           </div>
+          <label id="b2c-show-excl-label" style="display:none;align-items:center;gap:6px;font-size:12px;color:var(--uc-secondary);cursor:pointer;user-select:none">
+            <input type="checkbox" id="b2c-show-excl" onchange="renderB2CTable()" style="accent-color:#1F87C2">
+            Show excluded facilities
+          </label>
           <button class="export-btn" style="margin-left:auto" onclick="exportCSV('b2c')">📥 Export CSV</button>
         </div>
         <div class="filter-bar">
@@ -774,7 +778,7 @@
         <div class="uc-table-wrap">
           <table class="uc-table">
             <thead>
-              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th>CSM</th><th id="b2c-th-drr">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
+              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th id="b2c-th-csm">CSM</th><th id="b2c-th-drr">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
             </thead>
             <tbody id="b2c-tbody"></tbody>
           </table>
@@ -995,6 +999,10 @@
             <div class="rag-chip" onclick="filterB2B('inactive',this)">⚫ Inactive</div>
             <div class="rag-chip" onclick="filterB2B('new',this)">🆕 New (7 days)</div>
           </div>
+          <label id="b2b-show-excl-label" style="display:none;align-items:center;gap:6px;font-size:12px;color:var(--uc-secondary);cursor:pointer;user-select:none">
+            <input type="checkbox" id="b2b-show-excl" onchange="renderB2BTable()" style="accent-color:#1F87C2">
+            Show excluded facilities
+          </label>
           <button class="export-btn" style="margin-left:auto" onclick="exportCSV('b2b')">📥 Export CSV</button>
         </div>
         <div class="filter-bar">
@@ -1005,7 +1013,7 @@
         <div class="uc-table-wrap">
           <table class="uc-table">
             <thead>
-              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th>CSM</th><th id="b2b-th-drr">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
+              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th id="b2b-th-csm">CSM</th><th id="b2b-th-drr">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
             </thead>
             <tbody id="b2b-tbody"></tbody>
           </table>
@@ -1122,6 +1130,10 @@
             <div class="rag-chip" onclick="filterCC('inactive',this)">⚫ Inactive</div>
             <div class="rag-chip" onclick="filterCC('new',this)">🆕 New (7 days)</div>
           </div>
+          <label id="cc-show-excl-label" style="display:none;align-items:center;gap:6px;font-size:12px;color:var(--uc-secondary);cursor:pointer;user-select:none">
+            <input type="checkbox" id="cc-show-excl" onchange="renderCCTable()" style="accent-color:#1F87C2">
+            Show excluded facilities
+          </label>
           <button class="export-btn" style="margin-left:auto" onclick="exportCSV('cc')">📥 Export CSV</button>
         </div>
         <div class="filter-bar">
@@ -1132,7 +1144,7 @@
         <div class="uc-table-wrap">
           <table class="uc-table">
             <thead>
-              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th>CSM</th><th id="cc-th-drr">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
+              <tr><th>#</th><th>Tenant</th><th>Facility</th><th>Stage</th><th id="cc-th-csm">CSM</th><th id="cc-th-drr">DRR (Redash)</th><th>Go-Live Date</th><th>Notes</th><th></th></tr>
             </thead>
             <tbody id="cc-tbody"></tbody>
           </table>
@@ -2559,9 +2571,33 @@
     if (!tbody) return;
     if (suggestEl) suggestEl.innerHTML = '';
 
-    // Hide/show DRR column header based on filter
-    const drrTh = tbody.closest('table')?.querySelector('th.drr-col');
+    // Hide/show DRR and CSM column headers based on filter
+    const drrTh = document.getElementById(feat + '-th-drr');
+    const csmTh = document.getElementById(feat + '-th-csm');
     if (drrTh) drrTh.style.display = filterVal === 'inactive' ? 'none' : '';
+    if (csmTh) csmTh.style.display = filterVal === 'inactive' ? 'none' : '';
+
+    // Show/hide the "Show excluded" toggle — only visible when inactive filter is active
+    const showExclLabel = document.getElementById(feat + '-show-excl-label');
+    if (showExclLabel) showExclLabel.style.display = filterVal === 'inactive' ? 'flex' : 'none';
+
+    // Read toggle state
+    const showExclChecked = filterVal === 'inactive' &&
+      (document.getElementById(feat + '-show-excl')?.checked || false);
+
+    // Handle excluded facilities
+    const excl = loadExclusions().filter(e => e.feat === feat);
+    if (filterVal === 'inactive' && excl.length > 0) {
+      if (!showExclChecked) {
+        // Default: hide excluded from inactive view
+        rows = rows.filter(r => !excl.some(e =>
+          e.tenant.toLowerCase()   === r.tenant.toLowerCase() &&
+          e.facility.toLowerCase() === r.facility.toLowerCase()
+        ));
+      }
+      // If showExclChecked: excluded facilities remain in the list
+      // and will be tagged with their exclusion reason in the Stage cell
+    }
 
     // ── Render main tracked rows ──
     tbody.innerHTML = rows.map((r, i) => {
@@ -2570,15 +2606,20 @@
       const drrCell = `<strong style="color:${drrSrc==='live'?'#1F87C2':'var(--uc-body-text)'}">${Math.round(drrVal).toLocaleString('en-IN')}</strong>
                        <span style="font-size:10px;color:var(--uc-secondary);margin-left:2px">${drrSrc==='live'?'🔴 live':'📋 sheet'}</span>`;
 
-      // Stage: DRR-driven (ignores old CSM tags — source of truth is now the sheet)
+      // Stage: DRR-driven; check if this facility is user-excluded (staging etc.)
+      const _exclReason = isExcluded(r.tenant, r.facility, feat)
+        ? getExclusionReason(r.tenant, r.facility, feat) : null;
       const inactiveLbl = r.inactiveDays > 0
         ? `⚫ Inactive · ${r.inactiveDays}d`
         : '⚫ Inactive';
-      const stageCell = r.isNew
-        ? `<span class="badge badge-blue"  style="font-size:11px">🆕 New</span>`
-        : r.isInactive
-          ? `<span class="badge badge-grey" style="font-size:11px;white-space:nowrap" title="No picks for ${r.inactiveDays} consecutive day${r.inactiveDays!==1?'s':''}">${inactiveLbl}</span>`
-          : `<span class="badge badge-green" style="font-size:11px">🟢 Active</span>`;
+      const stageCell = _exclReason
+        ? `<span class="badge" style="font-size:11px;background:#F3E5F5;color:#7B1FA2;white-space:nowrap"
+             title="Excluded: ${_exclReason}">🚫 ${_exclReason}</span>`
+        : r.isNew
+          ? `<span class="badge badge-blue"  style="font-size:11px">🆕 New</span>`
+          : r.isInactive
+            ? `<span class="badge badge-grey" style="font-size:11px;white-space:nowrap" title="No picks for ${r.inactiveDays} consecutive day${r.inactiveDays!==1?'s':''}">${inactiveLbl}</span>`
+            : `<span class="badge badge-green" style="font-size:11px">🟢 Active</span>`;
 
       const csmCell  = r.csm
         ? `<span style="font-size:12px">${r.csm}</span>`
@@ -2602,16 +2643,35 @@
                   : r.isInactive ? 'background:rgba(0,0,0,0.02)'
                   :                '';
 
+      // Unique cell ID for inline Exclude CTA
+      const _te2  = r.tenant.replace(/'/g,"\\'"), _fe2 = r.facility.replace(/'/g,"\\'");
+      const cellId = `excl-${feat}-${i}`;
+      const _alreadyExcluded = !!_exclReason;
+      const actionsTd = filterVal === 'inactive'
+        ? `<td id="${cellId}" style="white-space:nowrap">
+             ${actionCell}
+             ${_alreadyExcluded
+               ? `<button onclick="removeExclusion('${_te2}','${_fe2}','${feat}')"
+                    style="margin-left:6px;padding:3px 9px;font-size:11px;border:1px solid #CE93D8;
+                           background:#F3E5F5;border-radius:5px;cursor:pointer;color:#7B1FA2;font-family:inherit"
+                    title="Restore to inactive list">↩ Undo</button>`
+               : `<button onclick="triggerExclude('${_te2}','${_fe2}','${feat}','${cellId}')"
+                    style="margin-left:6px;padding:3px 9px;font-size:11px;border:1px solid #E0E0E0;
+                           background:#FAFAFA;border-radius:5px;cursor:pointer;color:#757575;font-family:inherit"
+                    title="Exclude from inactive list">🚫 Exclude</button>`}
+           </td>`
+        : `<td style="white-space:nowrap">${actionCell}</td>`;
+
       return `<tr style="${rowBg}">
         <td style="color:var(--uc-secondary);width:28px">${i+1}</td>
         <td style="font-weight:700">${r.tenant}</td>
         <td style="color:var(--uc-secondary);font-size:12px">${r.facility}</td>
         <td>${stageCell}</td>
-        <td>${csmCell}</td>
+        ${filterVal !== 'inactive' ? `<td>${csmCell}</td>` : ''}
         ${filterVal !== 'inactive' ? `<td style="font-size:12px">${drrCell}</td>` : ''}
         <td>${startCell}</td>
         <td>${notesCell}</td>
-        <td style="white-space:nowrap">${actionCell}</td>
+        ${actionsTd}
       </tr>`;
     }).join('');
 
@@ -3021,11 +3081,146 @@
     console.log('[BackendData] Loaded', facilities.length, 'facilities from sheet');
   }
 
+  /* ════════════════════════════════════════════════════════════════
+     FACILITY EXCLUSION — permission-gated, stored in localStorage
+     Only ashutosh.mishra, udit.saxena, ritesh.dhakar @unicommerce.com
+     can exclude a facility from the inactive list.
+  ════════════════════════════════════════════════════════════════ */
+  const EXCLUDE_KEY      = 'hhd_exclusions_v1';
+  const EXCLUDE_REASONS  = ['STAGING ACCOUNT'];
+  const EXCLUDE_ALLOWED  = [
+    'ashutosh.mishra@unicommerce.com',
+    'udit.saxena@unicommerce.com',
+    'ritesh.dhakar@unicommerce.com',
+    'lokesh.kumar@unicommerce.com',
+  ];
+
+  function loadExclusions() {
+    try { return JSON.parse(localStorage.getItem(EXCLUDE_KEY) || '[]'); } catch(_) { return []; }
+  }
+  function saveExclusions(arr) { localStorage.setItem(EXCLUDE_KEY, JSON.stringify(arr)); }
+
+  function isExcluded(tenant, facility, feat) {
+    return loadExclusions().some(e =>
+      e.feat === feat &&
+      e.tenant.toLowerCase()   === tenant.toLowerCase() &&
+      e.facility.toLowerCase() === facility.toLowerCase()
+    );
+  }
+
+  function getExclusionReason(tenant, facility, feat) {
+    const e = loadExclusions().find(x =>
+      x.feat === feat &&
+      x.tenant.toLowerCase()   === tenant.toLowerCase() &&
+      x.facility.toLowerCase() === facility.toLowerCase()
+    );
+    return e ? e.reason : null;
+  }
+
+  // ── Inline exclusion CTA (no modal) ──────────────────────────────────────────
+  // When "Exclude" is clicked the button row expands inline with reason + confirm.
+
+  function triggerExclude(tenant, facility, feat, cellId) {
+    const authRaw = sessionStorage.getItem('hhd_gauth');
+    let userEmail = '';
+    try { userEmail = JSON.parse(authRaw || '{}').email || ''; } catch(_) {}
+
+    if (!EXCLUDE_ALLOWED.includes(userEmail.toLowerCase())) {
+      showToast('🔒 Access Restricted', 'Please connect with Product to change facility type.', true);
+      return;
+    }
+
+    const cell = document.getElementById(cellId);
+    if (!cell) return;
+
+    // Build inline reason selector inside the cell
+    const te = tenant.replace(/'/g,"\\'"), fe = facility.replace(/'/g,"\\'");
+    const reasonOpts = EXCLUDE_REASONS.map(r =>
+      `<span onclick="this.parentNode.querySelectorAll('span.exc-opt').forEach(s=>s.style.background='#F5F5F5');this.style.background='#E3F2FD';this.dataset.selected='1'"
+             class="exc-opt" data-reason="${r}"
+             style="display:inline-block;padding:3px 10px;border-radius:4px;font-size:11px;cursor:pointer;background:#F5F5F5;font-weight:600;border:1px solid #E0E0E0"
+             >${r}</span>`
+    ).join('');
+
+    cell.innerHTML = \`
+      <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+        <button class="btn-outlined" onclick="openDetailsFlyout('\${te}','\${fe}','\${feat}')">📋 Details</button>
+        <div style="display:flex;align-items:center;gap:5px;padding:4px 8px;background:#FFF8E1;border:1px solid #FFE082;border-radius:6px;flex-wrap:wrap">
+          \${reasonOpts}
+          <button onclick="confirmInlineExclusion('\${te}','\${fe}','\${feat}',this)"
+            style="padding:3px 10px;background:#E65100;color:white;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit">
+            ✓ Confirm
+          </button>
+          <button onclick="cancelExclude('\${cellId}','\${te}','\${fe}','\${feat}')"
+            style="padding:3px 8px;background:none;border:1px solid #E0E0E0;border-radius:4px;font-size:11px;cursor:pointer;font-family:inherit">
+            ✕
+          </button>
+        </div>
+      </div>\`;
+
+    // Auto-select the first reason
+    const firstOpt = cell.querySelector('.exc-opt');
+    if (firstOpt) { firstOpt.style.background = '#E3F2FD'; firstOpt.dataset.selected = '1'; }
+  }
+
+  function confirmInlineExclusion(tenant, facility, feat, btn) {
+    const authRaw = sessionStorage.getItem('hhd_gauth');
+    let userEmail = '';
+    try { userEmail = JSON.parse(authRaw || '{}').email || ''; } catch(_) {}
+
+    // Find selected reason
+    const cell = btn.closest('td');
+    const selectedOpt = cell?.querySelector('.exc-opt[data-selected="1"]');
+    const reason = selectedOpt?.dataset.reason || EXCLUDE_REASONS[0];
+
+    const all = loadExclusions().filter(e =>
+      !(e.feat === feat &&
+        e.tenant.toLowerCase()   === tenant.toLowerCase() &&
+        e.facility.toLowerCase() === facility.toLowerCase())
+    );
+    all.push({ feat, tenant, facility, reason, excludedBy: userEmail, excludedAt: Date.now() });
+    saveExclusions(all);
+    showToast('✅ Excluded', \`\${tenant} · \${facility} marked as \${reason}\`, false);
+    renderB2CTable(); renderB2BTable(); renderCCTable();
+    updateSummaryInactiveCounts();
+  }
+
+  function cancelExclude(cellId, tenant, facility, feat) {
+    const cell = document.getElementById(cellId);
+    if (!cell) return;
+    const te = tenant.replace(/'/g,"\\'"), fe = facility.replace(/'/g,"\\'");
+    cell.innerHTML = \`
+      <button class="btn-outlined" onclick="openDetailsFlyout('\${te}','\${fe}','\${feat}')">📋 Details</button>
+      <button onclick="triggerExclude('\${te}','\${fe}','\${feat}','\${cellId}')"
+        style="margin-left:6px;padding:3px 9px;font-size:11px;border:1px solid #E0E0E0;
+               background:#FAFAFA;border-radius:5px;cursor:pointer;color:#757575;font-family:inherit">
+        🚫 Exclude
+      </button>\`;
+  }
+
+  function removeExclusion(tenant, facility, feat) {
+    saveExclusions(loadExclusions().filter(e =>
+      !(e.feat === feat &&
+        e.tenant.toLowerCase()   === tenant.toLowerCase() &&
+        e.facility.toLowerCase() === facility.toLowerCase())
+    ));
+    showToast('↩ Inclusion Restored', `${tenant} · ${facility} will now appear in inactive list`, false);
+    renderB2CTable(); renderB2BTable(); renderCCTable();
+    updateSummaryInactiveCounts();
+  }
+
   // Overwrite the inactive WH cell in each summary card with the count
-  // derived from the live backend data (2-day rule), not the sheet's Inactive_Tenants tab.
+  // derived from the live backend data, excluding user-excluded facilities.
   function updateSummaryInactiveCounts() {
     ['b2c', 'b2b', 'cc'].forEach(feat => {
-      const count   = facilities.filter(f => f['_inactive_' + feat] === true).length;
+      const excl  = loadExclusions().filter(e => e.feat === feat);
+      const count = facilities.filter(f =>
+        f['_inactive_' + feat] === true &&
+        !excl.some(e =>
+          e.tenant.toLowerCase()   === f.tenant.toLowerCase() &&
+          e.facility.toLowerCase() === f.facility.toLowerCase()
+        )
+      ).length;
       const numEl   = document.getElementById(feat + '-summary-inactive-num');
       const subEl   = document.getElementById(feat + '-summary-inactive-sub');
       const cellEl  = document.getElementById(feat + '-summary-inactive-cell');
@@ -3147,5 +3342,6 @@
   fetchAdoptionSummary();    // pull live summary from Adoption Summary sheet
   fetchBackendData();        // replace hardcoded facilities[] with live backend data
 </script>
+
 </body>
 </html>
