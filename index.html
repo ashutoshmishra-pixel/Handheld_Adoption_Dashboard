@@ -2905,18 +2905,34 @@
     const unit     = DRR_UNIT[feat]   || 'picks';
     const statClr  = FEAT_STATUS_COLOR[data.status] || 'background:#F5F5F5;color:#424242';
 
-    // ── Parse numbers ──────────────────────────────────────────────────────────
+    // ── Parse numbers — use backend data when loaded to exclude staging accounts ──
     const drrRaw = parseInt((data.avgDRR || '').replace(/[^0-9]/g, '')) || 0;
     const drrFmt = drrRaw ? drrRaw.toLocaleString('en-IN') : '—';
     const newT   = parseInt(data.newTenants) || 0;
     const newW   = parseInt(data.newWh)      || 0;
-    // Inactive count: use live backend data (2-day rule) when available,
-    // falling back to the sheet's Inactive_Tenants count.
-    // This prevents the race condition where fetchAdoptionSummary resolves
-    // after fetchBackendData and overwrites the correct count with 0.
-    const inactiveN = _backendDataLoaded
-      ? facilities.filter(f => f['_inactive_' + feat] === true).length
-      : (parseInt(data.inactive) || 0);
+
+    // When backend data is loaded, compute all counts from it so staging exclusions
+    // are always reflected — regardless of which fetch resolved last.
+    let displayTenants = data.tenants   || '—';
+    let displayWH      = data.warehouses || '—';
+    let inactiveN      = parseInt(data.inactive) || 0;
+
+    if (_backendDataLoaded) {
+      const exclNow    = loadExclusions().filter(e => e.feat === feat);
+      const exclSetNow = new Set(exclNow.map(e => e.tenant.toLowerCase() + '||' + e.facility.toLowerCase()));
+      const activeFacs = facilities.filter(f =>
+        f['_in_' + feat] && !f['_inactive_' + feat] &&
+        !exclSetNow.has(f.tenant.toLowerCase() + '||' + f.facility.toLowerCase())
+      );
+      if (activeFacs.length > 0 || exclNow.length > 0) {
+        displayWH      = activeFacs.length;
+        displayTenants = new Set(activeFacs.map(f => f.tenant.toLowerCase())).size;
+      }
+      inactiveN = facilities.filter(f =>
+        f['_inactive_' + feat] === true &&
+        !exclSetNow.has(f.tenant.toLowerCase() + '||' + f.facility.toLowerCase())
+      ).length;
+    }
 
     // ── Build card ─────────────────────────────────────────────────────────────
     el.innerHTML = `
@@ -2939,7 +2955,7 @@
                style="padding:16px 18px;border-right:1px solid var(--uc-border);cursor:pointer;transition:background 0.15s"
                onmouseenter="this.style.background='#F5F9FF'" onmouseleave="this.style.background=''">
             <div style="font-size:10px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px">Active Tenants</div>
-            <div id="${feat}-summary-active-tenants" style="font-size:30px;font-weight:700;color:${color};line-height:1.1;text-decoration:underline;text-underline-offset:4px">${data.tenants || '—'}</div>
+            <div id="${feat}-summary-active-tenants" style="font-size:30px;font-weight:700;color:${color};line-height:1.1;text-decoration:underline;text-underline-offset:4px">${displayTenants}</div>
             ${newT > 0
               ? `<div style="font-size:11px;color:#2E7D32;margin-top:6px;font-weight:600;cursor:pointer" onclick="event.stopPropagation();goToDetails('new')" title="View new tenants">
                    <span style="background:#E8F5E9;border-radius:4px;padding:1px 6px">+${newT} new · last 7 days ↗</span>
@@ -2952,7 +2968,7 @@
                style="padding:16px 18px;border-right:1px solid var(--uc-border);cursor:pointer;transition:background 0.15s"
                onmouseenter="this.style.background='#F5F9FF'" onmouseleave="this.style.background=''">
             <div style="font-size:10px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:7px">Active Warehouses</div>
-            <div id="${feat}-summary-active-wh" style="font-size:30px;font-weight:700;color:${color};line-height:1.1;text-decoration:underline;text-underline-offset:4px">${data.warehouses || '—'}</div>
+            <div id="${feat}-summary-active-wh" style="font-size:30px;font-weight:700;color:${color};line-height:1.1;text-decoration:underline;text-underline-offset:4px">${displayWH}</div>
             ${newW > 0
               ? `<div style="font-size:11px;color:#2E7D32;margin-top:6px;font-weight:600;cursor:pointer" onclick="event.stopPropagation();goToDetails('new')" title="View new warehouses">
                    <span style="background:#E8F5E9;border-radius:4px;padding:1px 6px">+${newW} new · last 7 days ↗</span>
