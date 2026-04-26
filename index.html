@@ -2969,8 +2969,21 @@
     // ── Parse numbers — use backend data when loaded to exclude staging accounts ──
     const drrRaw = parseInt((data.avgDRR || '').replace(/[^0-9]/g, '')) || 0;
     const drrFmt = drrRaw ? drrRaw.toLocaleString('en-IN') : '—';
-    const newT   = parseInt(data.newTenants) || 0;
-    const newW   = parseInt(data.newWh)      || 0;
+    // Compute "new" from backend data (go-live within 7 days) to match the New tab filter.
+    // Falls back to sheet values if backend not loaded yet.
+    let newT = parseInt(data.newTenants) || 0;
+    let newW = parseInt(data.newWh)      || 0;
+    if (_backendDataLoaded) {
+      const newFacs = facilities.filter(f => {
+        if (!f['_in_' + feat]) return false;
+        if (exclSetNow.has(f.tenant.toLowerCase() + '||' + f.facility.toLowerCase())) return false;
+        const d = parseDashDate(f.config || '');
+        if (!d) return false;
+        return (Date.now() - d.getTime()) / 86400000 <= 7;
+      });
+      newW = newFacs.length;
+      newT = new Set(newFacs.map(f => f.tenant.toLowerCase())).size;
+    }
 
     // When backend data is loaded, compute all counts from it so staging exclusions
     // are always reflected — regardless of which fetch resolved last.
