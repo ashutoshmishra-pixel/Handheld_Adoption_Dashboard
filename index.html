@@ -807,10 +807,158 @@
         <div style="font-size:12px;color:var(--uc-secondary);margin-bottom:12px">Silent micro-step animations — no narration. Each GIF shows one specific action on the handheld.</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
           <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
-              <div style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB);padding:28px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
-                   onclick="openModule('Creating a B2C Picklist')">
-                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">📋</div>
-                <div style="position:absolute;top:8px;left:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px;font-weight:600">GIF · No audio</div>
+              <div style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB);padding:24px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Create Picklist')">
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">Step 1</div>
+                <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">📋</div>
+                <div style="position:absolute;top:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">GIF · No audio</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Create Picklist</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">How to generate a B2C picklist in WMS — selecting orders, setting batch size, and triggering picklist creation</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#1565C0;font-weight:600;cursor:pointer" onclick="openModule('Create Picklist')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);padding:24px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Assign User to Picklist')">
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">Step 2</div>
+                <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">👤</div>
+                <div style="position:absolute;top:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">GIF · No audio</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Assign User to Picklist</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">How a supervisor assigns a generated picklist to a specific picker from the WMS picklist management screen</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#2E7D32;font-weight:600;cursor:pointer" onclick="openModule('Assign User to Picklist')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);padding:24px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Self-Assign Picklist')">
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">Step 3</div>
+                <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">📱</div>
+                <div style="position:absolute;top:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">GIF · No audio</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Self-Assign Picklist</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">How a picker self-assigns an unassigned picklist directly from the handheld app without supervisor intervention</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#E65100;font-weight:600;cursor:pointer" onclick="openModule('Self-Assign Picklist')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#F3E5F5,#E1BEE7);padding:24px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Pick Path Optimisation')">
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">Step 4</div>
+                <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">🗺</div>
+                <div style="position:absolute;top:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">GIF · No audio</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Pick Path Optimisation</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">How the app sequences shelf visits in the most efficient route — configuring zone order and seeing the optimised path before picking starts</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#7B1FA2;font-weight:600;cursor:pointer" onclick="openModule('Pick Path Optimisation')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#E0F7FA,#B2EBF2);padding:24px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Shelf Suggestions')">
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">Step 5</div>
+                <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">📍</div>
+                <div style="position:absolute;top:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">GIF · No audio</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Shelf Suggestions</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">How the app shows suggested shelf locations for each SKU before the picker starts — helping them plan their walk ahead of picking</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#00695C;font-weight:600;cursor:pointer" onclick="openModule('Shelf Suggestions')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB);padding:24px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Picking Process')">
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">Step 6</div>
+                <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">🔍</div>
+                <div style="position:absolute;top:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">GIF · No audio</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Picking Process</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">Step-by-step picking: arrive at shelf → scan shelf barcode → scan item SKU → confirm quantity → move to next location</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#1565C0;font-weight:600;cursor:pointer" onclick="openModule('Picking Process')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#FFF8E1,#FFE082);padding:24px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Smart Nudges While Picking')">
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">Step 7</div>
+                <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">💡</div>
+                <div style="position:absolute;top:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">GIF · No audio</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Smart Nudges While Picking</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">How the app sends contextual prompts during picking — low stock alerts, alternate shelf suggestions, and pace reminders</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#F57F17;font-weight:600;cursor:pointer" onclick="openModule('Smart Nudges While Picking')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#FCE4EC,#F8BBD0);padding:24px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Bulk Picking')">
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">Step 8</div>
+                <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">📦📦</div>
+                <div style="position:absolute;top:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">GIF · No audio</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Bulk Picking</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">How to pick multiple orders simultaneously in a single trip — scanning multiple picklists and consolidating at a sorting station</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#C62828;font-weight:600;cursor:pointer" onclick="openModule('Bulk Picking')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);padding:24px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('UoM Box Picking')">
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">Step 9</div>
+                <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">🎁</div>
+                <div style="position:absolute;top:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">GIF · No audio</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">UoM Box Picking</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">Picking items sold in Unit of Measure (UoM) boxes — scanning a carton, confirming box count, and how the app handles UoM conversions</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#2E7D32;font-weight:600;cursor:pointer" onclick="openModule('UoM Box Picking')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#FFEBEE,#FFCDD2);padding:24px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Short Pick / Not Found')">
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;font-weight:700;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">Step 10</div>
+                <div style="width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">❌</div>
+                <div style="position:absolute;top:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px">GIF · No audio</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Short Pick / Not Found</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">What to do when an item is missing or stock is insufficient — marking a short pick, selecting a reason code, and completing the picklist</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#C62828;font-weight:600;cursor:pointer" onclick="openModule('Short Pick / Not Found')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+        </div>
+
+                      <div style="position:absolute;top:8px;left:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px;font-weight:600">GIF · No audio</div>
                 <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~30 sec</div>
               </div>
               <div style="padding:12px 14px">
