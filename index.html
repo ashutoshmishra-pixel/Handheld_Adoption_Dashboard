@@ -1246,7 +1246,14 @@
         <div class="df-section-hdr">
           <span>🎯 Issues &amp; Requirements</span>
           <span class="df-section-sub" id="df-issues-sub">Tenant-level · visible across all warehouses</span>
-          <button class="btn-add-inline" style="margin-left:auto;flex-shrink:0;margin-right:4px" onclick="refreshIssuesInFlyout()" title="Re-sync from issues tracker">🔄</button>
+          <a href="https://docs.google.com/spreadsheets/d/15EkwmB5Lotce93xU3kJ7OvsajNu45jsytOJ6WsBfITQ/edit?gid=0#gid=0" target="_blank"
+             style="margin-left:auto;font-size:11px;color:var(--uc-primary);text-decoration:none;
+                    display:flex;align-items:center;gap:4px;padding:3px 8px;border:1px solid var(--uc-border);
+                    border-radius:5px;background:var(--uc-white);flex-shrink:0;margin-right:6px;font-weight:600"
+             title="Open issues tracker spreadsheet">
+            📋 Open Sheet ↗
+          </a>
+          <button class="btn-add-inline" style="flex-shrink:0" onclick="refreshIssuesInFlyout()" title="Re-sync from issues tracker">🔄 Sync</button>
         </div>
         <!-- Issues list -->
         <div id="df-issues"></div>
@@ -1587,9 +1594,16 @@
     const el  = document.getElementById('df-issues');
     if (!all.length) {
       const modLabel = { b2c:'B2C Picking', b2b:'B2B Picking', cc:'Cycle Count' };
-      el.innerHTML = `<div style="color:#BDBDBD;font-size:12px;padding:10px 0;line-height:1.6">
-        No ${modLabel[dfFeature]||''} or General App issues found for <strong>${dfTenant}</strong>.<br>
-        <span style="font-size:11px">Use 🔄 to sync from the tracker, or + Capture Issue to log a new one.</span>
+      el.innerHTML = `<div style="background:#F8FBFF;border:1px solid #E3F2FD;border-radius:8px;padding:14px 16px;line-height:1.7">
+        <div style="font-size:12px;color:#757575;margin-bottom:8px">
+          No ${modLabel[dfFeature]||''} or General App issues found for <strong>${dfTenant}</strong>.
+        </div>
+        <div style="font-size:12px;font-weight:700;color:#1565C0;margin-bottom:6px">📋 How to add an issue:</div>
+        <ol style="font-size:11px;color:#424242;margin:0;padding-left:18px;line-height:1.8">
+          <li>Open the <a href="https://docs.google.com/spreadsheets/d/15EkwmB5Lotce93xU3kJ7OvsajNu45jsytOJ6WsBfITQ/edit?gid=0#gid=0" target="_blank" style="color:var(--uc-primary);font-weight:600">Issues Tracker sheet ↗</a></li>
+          <li>Add a new row with: <strong>Date, Client (tenant name), Module, Issue Type, Description, Priority, Status, Reporting Person</strong></li>
+          <li>Click <strong>🔄 Sync</strong> above to pull the latest data into this dashboard</li>
+        </ol>
       </div>`;
       return;
     }
