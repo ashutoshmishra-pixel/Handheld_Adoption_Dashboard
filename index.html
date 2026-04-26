@@ -798,17 +798,105 @@
           <div style="font-size:32px">📦</div>
           <div>
             <div style="font-weight:700;font-size:15px;color:#1565C0;margin-bottom:4px">B2C Picking on Handheld</div>
-            <div style="font-size:13px;color:#1565C0;line-height:1.6">System-directed picking for B2C (direct-to-consumer) orders. The app navigates pickers shelf-by-shelf, validates each item scan, and eliminates paper picklists. Works online and offline. Supports all traceability levels (None, Item SKU, Item, Batch).</div>
+            <div style="font-size:13px;color:#1565C0;line-height:1.6">System-directed picking for B2C (direct-to-consumer) orders. The app navigates pickers shelf-by-shelf, validates each item scan, and eliminates paper picklists. Requires active WiFi connection. Supports traceability levels: None, Item SKU, and Batch.</div>
           </div>
         </div>
 
         <!-- Video Training Library -->
-        <div style="font-size:12px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">📹 Micro-Video Training Library</div>
+        <div style="font-size:12px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">🎬 Step-by-Step GIF Training</div>
+        <div style="font-size:12px;color:var(--uc-secondary);margin-bottom:12px">Silent micro-step animations — no narration. Each GIF shows one specific action on the handheld.</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
           <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
               <div style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB);padding:28px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
-                   onclick="openModule('App Login & Setup')">
-                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">🔑</div>
+                   onclick="openModule('Creating a B2C Picklist')">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">📋</div>
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px;font-weight:600">GIF · No audio</div>
+                <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~30 sec</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Creating a B2C Picklist</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">How to generate a B2C picklist from the WMS and assign it to a picker on the handheld</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#1565C0;font-weight:600;cursor:pointer" onclick="openModule('Creating a B2C Picklist')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);padding:28px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Setting up Pick Path Optimisation')">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">🗺</div>
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px;font-weight:600">GIF · No audio</div>
+                <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~45 sec</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Setting up Pick Path Optimisation</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">How to configure zone-based pick routing so the app navigates pickers in the most efficient shelf sequence</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#2E7D32;font-weight:600;cursor:pointer" onclick="openModule('Setting up Pick Path Optimisation')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);padding:28px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Scanning a Shelf & Item')">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">📱</div>
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px;font-weight:600">GIF · No audio</div>
+                <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~20 sec</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Scanning a Shelf & Item</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">Step-by-step: arrive at shelf → scan shelf barcode → scan item SKU → confirm quantity</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#E65100;font-weight:600;cursor:pointer" onclick="openModule('Scanning a Shelf & Item')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#F3E5F5,#E1BEE7);padding:28px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Picking with Batch Codes')">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">🗂</div>
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px;font-weight:600">GIF · No audio</div>
+                <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~30 sec</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Picking with Batch Codes</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">How the app prompts for batch/expiry confirmation and enforces FEFO during picking</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#7B1FA2;font-weight:600;cursor:pointer" onclick="openModule('Picking with Batch Codes')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#FFEBEE,#FFCDD2);padding:28px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Handling a Scan Error')">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">⚠</div>
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px;font-weight:600">GIF · No audio</div>
+                <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~20 sec</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Handling a Scan Error</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">What happens when a wrong item is scanned — error screen, correction flow, and retry</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#C62828;font-weight:600;cursor:pointer" onclick="openModule('Handling a Scan Error')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#E0F7FA,#B2EBF2);padding:28px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Completing a Picklist')">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">✅</div>
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px;font-weight:600">GIF · No audio</div>
+                <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~15 sec</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Completing a Picklist</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">How to mark a picklist as fully picked and submit it from the handheld</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#00695C;font-weight:600;cursor:pointer" onclick="openModule('Completing a Picklist')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+        </div>
                 <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~3 min</div>
               </div>
               <div style="padding:12px 14px">
@@ -892,151 +980,7 @@
         </div>
 
         <!-- Warehouse Team Training Guide -->
-        <div style="font-size:12px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">📄 Warehouse Team Training Guide</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-          <div style="background:var(--uc-white);border:1px solid var(--uc-border);border-radius:10px;padding:16px">
-            <div style="font-weight:700;font-size:13px;color:#1565C0;margin-bottom:12px;display:flex;align-items:center;gap:6px">📋 Before You Start</div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">✅</span><div><div style="font-size:12px;font-weight:700;color:#424242">Device Check</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Android phone or scanner (TC21+ recommended). App installed and logged in.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">📶</span><div><div style="font-size:12px;font-weight:700;color:#424242">WiFi</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Connect to warehouse WiFi before starting. Offline mode available if WiFi drops.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">🔋</span><div><div style="font-size:12px;font-weight:700;color:#424242">Battery</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Ensure device is ≥50% charged before a shift.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">👤</span><div><div style="font-size:12px;font-weight:700;color:#424242">Login</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Use your assigned WH credentials — do not share login.</div></div></div>
-          </div>
-          <div style="background:var(--uc-white);border:1px solid var(--uc-border);border-radius:10px;padding:16px">
-            <div style="font-weight:700;font-size:13px;color:#2E7D32;margin-bottom:12px">📦 Step-by-Step Pick Flow</div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div><div style="font-size:13px;color:#424242;line-height:1.5">Open app → Tap <b>Picking</b> → Select <b>B2C Picklist</b></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div><div style="font-size:13px;color:#424242;line-height:1.5">Scan the picklist barcode or enter the Picklist ID manually</div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div><div style="font-size:13px;color:#424242;line-height:1.5">App shows the first location — walk to that shelf/section</div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div><div style="font-size:13px;color:#424242;line-height:1.5">Scan the <b>shelf barcode</b> to confirm location</div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">5</div><div style="font-size:13px;color:#424242;line-height:1.5">Scan the <b>item barcode / SKU</b> — app validates the pick</div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">6</div><div style="font-size:13px;color:#424242;line-height:1.5">If batch item: confirm <b>batch/expiry</b> when prompted</div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">7</div><div style="font-size:13px;color:#424242;line-height:1.5">Confirm quantity → app moves to next item automatically</div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">8</div><div style="font-size:13px;color:#424242;line-height:1.5">Repeat until all items picked → tap <b>Complete Picking</b></div></div>
-          </div>
-        </div>
 
-        <!-- Common Issues & CSM Objections -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:10px;padding:16px">
-            <div style="font-weight:700;font-size:13px;color:#F57F17;margin-bottom:12px">⚠ Common Issues &amp; Fixes</div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">🔴</span><div><div style="font-size:12px;font-weight:700;color:#424242">Item scan not accepted</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Wrong item or wrong location. Recheck shelf → try rescanning the correct item.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">🔴</span><div><div style="font-size:12px;font-weight:700;color:#424242">Picklist not visible</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Check if picklist is assigned to your user ID. Ask supervisor to reassign.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">🔴</span><div><div style="font-size:12px;font-weight:700;color:#424242">App freezes</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Force close and reopen. If offline, picks are saved locally — do not restart.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">🔴</span><div><div style="font-size:12px;font-weight:700;color:#424242">Batch mismatch error</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">App enforces FEFO. Pick the earliest expiry batch shown on screen.</div></div></div>
-          </div>
-          <div style="background:#F1FBF1;border:1px solid #C8E6C9;border-radius:10px;padding:16px">
-            <div style="font-weight:700;font-size:13px;color:#2E7D32;margin-bottom:12px">🎯 CSM Objection Responses</div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">💬</span><div><div style="font-size:12px;font-weight:700;color:#424242">"Pickers won't learn it"</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">B2C flow is 8 taps. 15-min live demo converts 90% of skeptics. Offer a 1-zone pilot.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">💬</span><div><div style="font-size:12px;font-weight:700;color:#424242">"We use paper picklists"</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Paper = mispicks. Show avg 70% drop in errors. Calculate cost per mispick with client.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">💬</span><div><div style="font-size:12px;font-weight:700;color:#424242">"WiFi is unreliable"</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Offline mode syncs when reconnected. Demo the offline flow during the site visit.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">💬</span><div><div style="font-size:12px;font-weight:700;color:#424242">"Devices are expensive"</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Zebra TC21 costs ~₹18k. ROI in 3 months from error reduction + speed gains.</div></div></div>
-          </div>
-        </div>
-
-      
-        <div class="section-sub">Resources, cheat sheets, and objection handling scripts to drive handheld adoption</div>
-        <div style="font-size:11px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Training Modules</div>
-        <div class="training-grid">
-          <div class="training-card" onclick="openModule('B2C Picking on Handheld')">
-            <div class="training-card-banner" style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB)">📦</div>
-            <div class="training-card-body">
-              <div class="training-card-title">B2C Picking on Handheld</div>
-              <div class="training-card-sub">Full B2C pick flow, error handling, and edge cases</div>
-              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:85%"></div></div>
-              <div class="training-progress-label">85% of CSMs completed · 4 modules</div>
-            </div>
-          </div>
-          <div class="training-card" onclick="openModule('B2B Picking + HU Flow')">
-            <div class="training-card-banner" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9)">🏭</div>
-            <div class="training-card-body">
-              <div class="training-card-title">B2B Picking + HU Flow</div>
-              <div class="training-card-sub">Handling Unit activation, pre-pack config, B2B packing validation</div>
-              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:60%;background:#4A934A"></div></div>
-              <div class="training-progress-label">60% of CSMs completed · 5 modules</div>
-            </div>
-          </div>
-          <div class="training-card" onclick="openModule('Cycle Count via Handheld')">
-            <div class="training-card-banner" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2)">🔄</div>
-            <div class="training-card-body">
-              <div class="training-card-title">Cycle Count via Handheld</div>
-              <div class="training-card-sub">Initiating, scanning, and closing a cycle count from the app</div>
-              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:45%;background:#F57F17"></div></div>
-              <div class="training-progress-label">45% of CSMs completed · 3 modules</div>
-            </div>
-          </div>
-          <div class="training-card" onclick="openModule('GRN & Inward on Handheld')">
-            <div class="training-card-banner" style="background:linear-gradient(135deg,#F3E5F5,#E1BEE7)">📥</div>
-            <div class="training-card-body">
-              <div class="training-card-title">GRN &amp; Inward on Handheld</div>
-              <div class="training-card-sub">Receiving goods, tag printing, traceability handling on device</div>
-              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:70%;background:#9C27B0"></div></div>
-              <div class="training-progress-label">70% of CSMs completed · 3 modules</div>
-            </div>
-          </div>
-          <div class="training-card" onclick="openModule('Objection Handling Playbook')">
-            <div class="training-card-banner" style="background:linear-gradient(135deg,#FCE4EC,#F8BBD0)">🎯</div>
-            <div class="training-card-body">
-              <div class="training-card-title">Objection Handling Playbook</div>
-              <div class="training-card-sub">Respond to common client pushbacks on handheld adoption</div>
-              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:90%;background:#E91E63"></div></div>
-              <div class="training-progress-label">90% of CSMs completed · 2 modules</div>
-            </div>
-          </div>
-          <div class="training-card" onclick="openModule('Demo Script & Sandbox')">
-            <div class="training-card-banner" style="background:linear-gradient(135deg,#E0F7FA,#B2EBF2)">🎥</div>
-            <div class="training-card-body">
-              <div class="training-card-title">Demo Script &amp; Sandbox</div>
-              <div class="training-card-sub">Run a live demo for clients using the sandbox environment</div>
-              <div class="training-progress-wrap"><div class="training-progress-bar" style="width:55%;background:#00ACC1"></div></div>
-              <div class="training-progress-label">55% of CSMs completed · 2 modules</div>
-            </div>
-          </div>
-        </div>
-        <div style="font-size:11px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Quick Reference Cheat Sheets</div>
-        <div class="cheatsheet-grid">
-          <div class="cheatsheet-card">
-            <div class="cheatsheet-title">📦 B2C Pick Flow</div>
-            <ul class="cheatsheet-steps">
-              <li class="cheatsheet-step"><span class="step-num">1</span><span>Open HH app → Login with WH credentials</span></li>
-              <li class="cheatsheet-step"><span class="step-num">2</span><span>Go to <b>Picking</b> → Select <b>B2C Picklist</b></span></li>
-              <li class="cheatsheet-step"><span class="step-num">3</span><span>Scan Picklist barcode or enter ID manually</span></li>
-              <li class="cheatsheet-step"><span class="step-num">4</span><span>App navigates to first shelf — go to location</span></li>
-              <li class="cheatsheet-step"><span class="step-num">5</span><span>Scan shelf barcode → scan item SKU → confirm qty</span></li>
-              <li class="cheatsheet-step"><span class="step-num">6</span><span>Repeat for all items → Mark picklist as <b>Picked</b></span></li>
-            </ul>
-          </div>
-          <div class="cheatsheet-card">
-            <div class="cheatsheet-title">🔄 Cycle Count Flow</div>
-            <ul class="cheatsheet-steps">
-              <li class="cheatsheet-step"><span class="step-num">1</span><span>Go to <b>Inventory</b> → <b>Cycle Count</b> on HH app</span></li>
-              <li class="cheatsheet-step"><span class="step-num">2</span><span>Select assigned count task or scan shelf barcode</span></li>
-              <li class="cheatsheet-step"><span class="step-num">3</span><span>Scan each item — app records vs. system qty</span></li>
-              <li class="cheatsheet-step"><span class="step-num">4</span><span>Discrepancies shown in red — confirm or flag</span></li>
-              <li class="cheatsheet-step"><span class="step-num">5</span><span>Mark count <b>Complete</b> → submitted for WH Manager review</span></li>
-              <li class="cheatsheet-step"><span class="step-num">6</span><span>WH Manager approves → inventory reconciled</span></li>
-            </ul>
-          </div>
-          <div class="cheatsheet-card">
-            <div class="cheatsheet-title">🎯 Top 5 Objection Responses</div>
-            <ul class="cheatsheet-steps">
-              <li class="cheatsheet-step"><span class="step-num">1</span><span><b>"App is slow"</b> → Check WiFi. Zebra TC21+ recommended. Offline mode available.</span></li>
-              <li class="cheatsheet-step"><span class="step-num">2</span><span><b>"Pickers won't learn it"</b> → 15-min onboarding video. Pick flow is 6 taps — demo it live.</span></li>
-              <li class="cheatsheet-step"><span class="step-num">3</span><span><b>"We use paper"</b> → Lead with error rate reduction data (avg 70% drop in mispicks).</span></li>
-              <li class="cheatsheet-step"><span class="step-num">4</span><span><b>"Devices not compatible"</b> → App works on Android 8+. Share device compatibility matrix.</span></li>
-              <li class="cheatsheet-step"><span class="step-num">5</span><span><b>"Next quarter"</b> → Offer 2-week pilot with 1 zone + dedicated support.</span></li>
-            </ul>
-          </div>
-          <div class="cheatsheet-card">
-            <div class="cheatsheet-title">📋 CSM Adoption Drive Checklist</div>
-            <ul class="cheatsheet-steps">
-              <li class="cheatsheet-step"><span class="step-num">✓</span><span>Share app download link &amp; device requirements doc</span></li>
-              <li class="cheatsheet-step"><span class="step-num">✓</span><span>Schedule WH walkthrough with Ops Lead</span></li>
-              <li class="cheatsheet-step"><span class="step-num">✓</span><span>Conduct live demo on sandbox with actual SKUs</span></li>
-              <li class="cheatsheet-step"><span class="step-num">✓</span><span>Set up pilot: 1 section, 1 workflow first</span></li>
-              <li class="cheatsheet-step"><span class="step-num">✓</span><span>Review first-week metrics with client</span></li>
-              <li class="cheatsheet-step"><span class="step-num">✓</span><span>Collect feedback and escalate bugs immediately</span></li>
-            </ul>
-          </div>
-        </div>
       </div><!-- /b2c-panel-2 -->
 
 
@@ -1177,12 +1121,100 @@
         </div>
 
         <!-- Video Training Library -->
-        <div style="font-size:12px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">📹 Micro-Video Training Library</div>
+        <div style="font-size:12px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">🎬 Step-by-Step GIF Training</div>
+        <div style="font-size:12px;color:var(--uc-secondary);margin-bottom:12px">Silent micro-step animations — no narration. Each GIF shows one specific action on the handheld.</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:28px">
           <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
               <div style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);padding:28px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
-                   onclick="openModule('B2B Picking Introduction')">
+                   onclick="openModule('Activating a Handling Unit')">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">📦</div>
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px;font-weight:600">GIF · No audio</div>
+                <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~30 sec</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Activating a Handling Unit</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">How to scan a FREE HU from the pool and link it to a B2B picklist before starting to pick</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#2E7D32;font-weight:600;cursor:pointer" onclick="openModule('Activating a Handling Unit')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB);padding:28px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Bulk Picking into an HU')">
                 <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">🏭</div>
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px;font-weight:600">GIF · No audio</div>
+                <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~45 sec</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Bulk Picking into an HU</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">Picking multiple items into an active HU — scanning shelf → item → quantity confirmation</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#1565C0;font-weight:600;cursor:pointer" onclick="openModule('Bulk Picking into an HU')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);padding:28px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Switching to a New HU Mid-Pick')">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">📦📦</div>
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px;font-weight:600">GIF · No audio</div>
+                <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~30 sec</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Switching to a New HU Mid-Pick</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">When an HU hits its SKU limit — closing it and activating a fresh HU to continue the order</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#E65100;font-weight:600;cursor:pointer" onclick="openModule('Switching to a New HU Mid-Pick')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#F3E5F5,#E1BEE7);padding:28px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Packing an HU at the Station')">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">✅</div>
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px;font-weight:600">GIF · No audio</div>
+                <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~45 sec</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Packing an HU at the Station</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">Scanning the HU at the packing station, validating items, entering dimensions, and generating the pack slip</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#7B1FA2;font-weight:600;cursor:pointer" onclick="openModule('Packing an HU at the Station')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#E0F7FA,#B2EBF2);padding:28px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Enabling Pre-Pack HU Config')">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">⚙</div>
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px;font-weight:600">GIF · No audio</div>
+                <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~40 sec</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Enabling Pre-Pack HU Config</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">One-time WMS setup: toggling Pre-pack HU on for a B2B channel and printing HU pool labels</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#00695C;font-weight:600;cursor:pointer" onclick="openModule('Enabling Pre-Pack HU Config')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+          <div style="border:1px solid var(--uc-border);border-radius:10px;overflow:hidden;background:var(--uc-white);box-shadow:0 1px 4px rgba(0,0,0,0.06)">
+              <div style="background:linear-gradient(135deg,#FFEBEE,#FFCDD2);padding:28px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer"
+                   onclick="openModule('Recovering from an HU Error')">
+                <div style="width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 2px 8px rgba(0,0,0,0.15)">🛠</div>
+                <div style="position:absolute;top:8px;left:10px;font-size:10px;background:rgba(0,0,0,0.45);color:#fff;padding:2px 7px;border-radius:4px;font-weight:600">GIF · No audio</div>
+                <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~30 sec</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="font-weight:700;font-size:13px;color:var(--uc-body-text);margin-bottom:3px">Recovering from an HU Error</div>
+                <div style="font-size:11px;color:var(--uc-secondary);line-height:1.5">HU already in use, SKU constraint breach — what the error looks like and how to resolve it</div>
+                <div style="margin-top:10px">
+                  <span style="font-size:11px;color:#C62828;font-weight:600;cursor:pointer" onclick="openModule('Recovering from an HU Error')">▶ View GIF →</span>
+                </div>
+              </div>
+            </div>
+        </div>
                 <div style="position:absolute;bottom:8px;right:10px;font-size:10px;background:rgba(0,0,0,0.5);color:#fff;padding:2px 7px;border-radius:4px">~3 min</div>
               </div>
               <div style="padding:12px 14px">
@@ -1266,45 +1298,6 @@
         </div>
 
         <!-- Warehouse Team Training Guide -->
-        <div style="font-size:12px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px">📄 Warehouse Team Training Guide</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-          <div style="background:var(--uc-white);border:1px solid var(--uc-border);border-radius:10px;padding:16px">
-            <div style="font-weight:700;font-size:13px;color:#2E7D32;margin-bottom:12px">📦 B2B Pick + HU Flow</div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div><div style="font-size:13px;color:#424242;line-height:1.5">Open app → Tap <b>Picking</b> → Select <b>B2B Picklist</b></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div><div style="font-size:13px;color:#424242;line-height:1.5">App prompts: <b>Scan a Handling Unit (HU)</b> barcode</div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div><div style="font-size:13px;color:#424242;line-height:1.5">Pick a FREE HU from the pool — scan its barcode label</div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div><div style="font-size:13px;color:#424242;line-height:1.5">HU is now active. Navigate to the first shelf location</div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">5</div><div style="font-size:13px;color:#424242;line-height:1.5">Scan shelf → scan item SKU → confirm quantity into HU</div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">6</div><div style="font-size:13px;color:#424242;line-height:1.5">If HU is full: tap <b>Close HU</b> → scan a new FREE HU to continue</div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">7</div><div style="font-size:13px;color:#424242;line-height:1.5">After all items picked: HU moves to <b>Pending Packing</b></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><div style="min-width:22px;height:22px;border-radius:50%;background:#1F87C2;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">8</div><div style="font-size:13px;color:#424242;line-height:1.5">At packing station: scan HU → validate items → enter dimensions → generate pack slip</div></div>
-          </div>
-          <div style="background:var(--uc-white);border:1px solid var(--uc-border);border-radius:10px;padding:16px">
-            <div style="font-weight:700;font-size:13px;color:#1565C0;margin-bottom:12px">📋 HU Rules to Remember</div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">📦</span><div><div style="font-size:12px;font-weight:700;color:#424242">One shelf = one HU</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">A shelf cannot hold multiple HUs. Move picked HU to staging before placing a new one.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">🔢</span><div><div style="font-size:12px;font-weight:700;color:#424242">SKU limit per HU</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Each HU has a max SKU count (set by WH Manager). App will warn when limit is reached.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">🗂</span><div><div style="font-size:12px;font-weight:700;color:#424242">Batch constraint</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">If a batch limit is hit mid-pick, close the HU and start a new one for the next batch.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">📋</span><div><div style="font-size:12px;font-weight:700;color:#424242">Pack slip required</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Every sealed HU needs a pack slip generated before it moves to dispatch staging.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">🔄</span><div><div style="font-size:12px;font-weight:700;color:#424242">Re-scanning an HU</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Scanning a partially picked HU shows its current contents — you can continue picking into it.</div></div></div>
-          </div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:10px;padding:16px">
-            <div style="font-weight:700;font-size:13px;color:#F57F17;margin-bottom:12px">⚠ Common Issues &amp; Fixes</div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">🔴</span><div><div style="font-size:12px;font-weight:700;color:#424242">HU scan not accepted</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">HU may already be IN USE by another picker. Check Active HUs screen with supervisor.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">🔴</span><div><div style="font-size:12px;font-weight:700;color:#424242">SKU constraint error</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">HU has hit SKU limit. Close this HU and activate a new FREE HU to continue.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">🔴</span><div><div style="font-size:12px;font-weight:700;color:#424242">Pack slip not generating</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Ensure all items in the HU are accounted for. Cancel any partial picks before completing.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">🔴</span><div><div style="font-size:12px;font-weight:700;color:#424242">HU status stuck in IN_PICKING</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Supervisor to reassign or force-close the HU from WMS admin panel.</div></div></div>
-          </div>
-          <div style="background:#F1FBF1;border:1px solid #C8E6C9;border-radius:10px;padding:16px">
-            <div style="font-weight:700;font-size:13px;color:#2E7D32;margin-bottom:12px">🎯 CSM Objection Responses</div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">💬</span><div><div style="font-size:12px;font-weight:700;color:#424242">"HU setup is complex"</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">One-time config (Pre-pack HU toggle + pool creation). Takes 30 min. Show the setup demo.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">💬</span><div><div style="font-size:12px;font-weight:700;color:#424242">"We bulk-pick manually"</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Manual bulk = carton mismatches. HU validation catches wrong items before dispatch.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">💬</span><div><div style="font-size:12px;font-weight:700;color:#424242">"Pickers prefer desktops"</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Same pick flow — just on handheld. 15-min training sufficient. HU scan is 1 extra tap.</div></div></div>
-            <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F5F5F5"><span style="font-size:16px;flex-shrink:0">💬</span><div><div style="font-size:12px;font-weight:700;color:#424242">"What if HU labels run out?"</div><div style="font-size:12px;color:#757575;margin-top:2px;line-height:1.5">Print more from the HU Pool screen in WMS. Keep 50 FREE HUs ready at all times.</div></div></div>
-          </div>
-        </div>
 
       </div><!-- /b2b-panel-2 -->
 
@@ -3631,6 +3624,8 @@
     if (overlay) overlay.remove();
     // Show welcome modal on first visit
     showWelcomeIfNew();
+    // Restrict Training Hub & Roadmap tabs to authorised email only
+    applyTabVisibility(user.email);
     // Update avatar initials with signed-in user
     const avatar = document.querySelector('.avatar');
     if (avatar) {
@@ -3648,6 +3643,17 @@
     initAuth();
   }
 
+
+  /* ── TAB VISIBILITY — Training Hub & Roadmap restricted to admin ── */
+  const ADMIN_TABS_EMAIL = 'ashutosh.mishra@unicommerce.com';
+
+  function applyTabVisibility(email) {
+    if ((email || '').toLowerCase() === ADMIN_TABS_EMAIL) return; // full access
+    // Hide "CSM Training Hub" (index 2) and "Pitch & Roadmap" (index 3) for everyone else
+    document.querySelectorAll('.page-tab').forEach((tab, idx) => {
+      if (idx === 2 || idx === 3) tab.style.display = 'none';
+    });
+  }
 
   /* ── WELCOME MODAL — first-visit onboarding ──────────────────────────────── */
   const WELCOME_KEY = 'hhd_welcome_seen_v1';
