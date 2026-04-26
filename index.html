@@ -2594,12 +2594,17 @@
 
     let rows = [...allMerged];
 
-    // Filter: active, inactive (matches refresh script logic), new (first appeared in latest snapshot)
+    // Filter: active, inactive, new (go-live within last 7 days by configDate)
     if (filterVal && filterVal !== 'all') {
       rows = rows.filter(r => {
         if (filterVal === 'active')   return !r.isInactive;
         if (filterVal === 'inactive') return r.isInactive === true;
-        if (filterVal === 'new')      return r.isNew === true;
+        if (filterVal === 'new') {
+          const d = parseDashDate(r.configDate || r.startDate || '');
+          if (!d) return false;
+          const diffDays = (Date.now() - d.getTime()) / 86400000;
+          return diffDays >= 0 && diffDays <= 7;
+        }
         return true;
       });
     }
@@ -2656,10 +2661,16 @@
       const inactiveLbl = r.inactiveDays > 0
         ? `⚫ Inactive · ${r.inactiveDays}d`
         : '⚫ Inactive';
+      const _isNewDisplay = (() => {
+        const d = parseDashDate(r.configDate || r.startDate || '');
+        if (!d) return false;
+        const diffDays = (Date.now() - d.getTime()) / 86400000;
+        return diffDays >= 0 && diffDays <= 7;
+      })();
       const stageCell = _exclReason
         ? `<span class="badge" style="font-size:11px;background:#F3E5F5;color:#7B1FA2;white-space:nowrap"
              title="Excluded: ${_exclReason}">🚫 ${_exclReason}</span>`
-        : r.isNew
+        : _isNewDisplay
           ? `<span class="badge badge-blue"  style="font-size:11px">🆕 New</span>`
           : r.isInactive
             ? `<span class="badge badge-grey" style="font-size:11px;white-space:nowrap" title="No picks for ${r.inactiveDays} consecutive day${r.inactiveDays!==1?'s':''}">${inactiveLbl}</span>`
