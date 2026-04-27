@@ -3090,7 +3090,7 @@
     }
 
     const color    = FEAT_COLOR[feat] || '#1F87C2';
-    const tam      = TAM_LABELS[feat] || '—';
+    const tam      = (data.tamTarget && data.tamTarget !== '—') ? data.tamTarget : (TAM_LABELS[feat] || '—');
     const unit     = DRR_UNIT[feat]   || 'picks';
     const statClr  = FEAT_STATUS_COLOR[data.status] || 'background:#F5F5F5;color:#424242';
 
