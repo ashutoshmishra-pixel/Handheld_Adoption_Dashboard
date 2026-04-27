@@ -2484,9 +2484,20 @@
   }
 
   // Chart windows: 4 weekly buckets from Apr 1, 4 monthly buckets from Mar 1
+  // Weekly: rolling — always the last 4 complete weeks from today (dynamic start).
+  // Monthly: fixed start March 2026, max 4 months (Mar → Jun as months pass).
+  function getTrendWindow(period) {
+    if (period === 'month') return { start: new Date('2026-03-01'), max: 4 };
+    // Weekly: go back 4 weeks (28 days) from today, then find that Monday
+    const d = new Date();
+    d.setDate(d.getDate() - 28);
+    const day = d.getDay();
+    d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day)); // move to Monday
+    return { start: d, max: 4 };
+  }
   const TREND_WINDOW = {
-    week:  { start: new Date('2026-04-01'), max: 4 },
-    month: { start: new Date('2026-03-01'), max: 4 },
+    week:  getTrendWindow('week'),
+    month: getTrendWindow('month'),
   };
 
   function buildStartedTrend(feat, period) {
@@ -2500,7 +2511,7 @@
     });
     if (!points.length) return [];
 
-    const { start: windowStart, max: maxBuckets } = TREND_WINDOW[period] || TREND_WINDOW.week;
+    const { start: windowStart, max: maxBuckets } = getTrendWindow(period);
 
     // Build explicit bucket start dates so empty periods still appear
     const bucketStarts = [];
