@@ -2623,15 +2623,19 @@
     const facDots = data.map((d, i) => {
       const cx = xM(i), cy = yS(d.cumFacs);
       const last = i === n - 1;
-      return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${last?4:3}" fill="${color}"/>
-              ${last ? `<text x="${cx.toFixed(1)}" y="${(cy-7).toFixed(1)}" font-size="9" fill="${color}" font-weight="700" text-anchor="middle">${d.cumFacs} wh</text>` : ''}`;
+      return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${last?5:4}" fill="${color}" style="cursor:pointer"
+                data-label="${d.label}" data-wh="${d.cumFacs}" data-ten="${d.cumTenants}" data-newwh="${d.newFacs}" data-newten="${d.newTenants}"
+                onmouseenter="showTrendTooltip(event,this,'${color}')" onmouseleave="hideTrendTooltip()"/>
+              ${last ? `<text x="${cx.toFixed(1)}" y="${(cy-9).toFixed(1)}" font-size="9" fill="${color}" font-weight="700" text-anchor="middle">${d.cumFacs} wh</text>` : ''}`;
     }).join('');
 
     const tenDots = data.map((d, i) => {
       const cx = xM(i), cy = yS(d.cumTenants);
       const last = i === n - 1;
-      return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${last?4:3}" fill="#F57F17"/>
-              ${last ? `<text x="${cx.toFixed(1)}" y="${(cy-7).toFixed(1)}" font-size="9" fill="#F57F17" font-weight="700" text-anchor="middle">${d.cumTenants} clients</text>` : ''}`;
+      return `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${last?5:4}" fill="#F57F17" style="cursor:pointer"
+                data-label="${d.label}" data-wh="${d.cumFacs}" data-ten="${d.cumTenants}" data-newwh="${d.newFacs}" data-newten="${d.newTenants}"
+                onmouseenter="showTrendTooltip(event,this,'#F57F17')" onmouseleave="hideTrendTooltip()"/>
+              ${last ? `<text x="${cx.toFixed(1)}" y="${(cy-9).toFixed(1)}" font-size="9" fill="#F57F17" font-weight="700" text-anchor="middle">${d.cumTenants} clients</text>` : ''}`;
     }).join('');
 
     // X-axis labels (skip if crowded)
@@ -2653,6 +2657,58 @@
         <polyline points="${tenPts}" fill="none" stroke="#F57F17" stroke-width="1.5" stroke-linejoin="round" stroke-dasharray="5,3"/>
         ${bars}${facDots}${tenDots}${xLabels}
       </svg>`;
+  }
+
+  /* ── TREND CHART TOOLTIP ── */
+  let _trendTip = null;
+
+  function showTrendTooltip(event, el, dotColor) {
+    if (!_trendTip) {
+      _trendTip = document.createElement('div');
+      _trendTip.id = 'trend-tooltip';
+      _trendTip.style.cssText = 'position:fixed;z-index:999;pointer-events:none;background:#fff;border:1px solid var(--uc-border);border-radius:8px;padding:10px 14px;box-shadow:0 4px 16px rgba(0,0,0,0.12);font-family:Roboto,sans-serif;font-size:12px;min-width:160px;display:none';
+      document.body.appendChild(_trendTip);
+    }
+    const label   = el.dataset.label;
+    const wh      = el.dataset.wh;
+    const ten     = el.dataset.ten;
+    const newWh   = el.dataset.newwh;
+    const newTen  = el.dataset.newten;
+
+    _trendTip.innerHTML =
+      '<div style="font-weight:700;color:#212121;margin-bottom:8px;border-bottom:1px solid #F0F0F0;padding-bottom:6px">' + label + '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:5px">' +
+        '<div style="display:flex;justify-content:space-between;gap:16px">' +
+          '<span style="color:#757575">🏭 Warehouses</span>' +
+          '<span style="font-weight:700;color:' + dotColor + '">' + wh + '</span>' +
+        '</div>' +
+        '<div style="display:flex;justify-content:space-between;gap:16px">' +
+          '<span style="color:#757575">🏢 Tenants</span>' +
+          '<span style="font-weight:700;color:#F57F17">' + ten + '</span>' +
+        '</div>' +
+        (parseInt(newWh) > 0 || parseInt(newTen) > 0 ?
+          '<div style="margin-top:4px;padding-top:6px;border-top:1px solid #F0F0F0;font-size:11px;color:#4A934A;font-weight:600">' +
+            (parseInt(newWh)  > 0 ? '+' + newWh  + ' new WH'      : '') +
+            (parseInt(newWh)  > 0 && parseInt(newTen) > 0 ? '  ·  ' : '') +
+            (parseInt(newTen) > 0 ? '+' + newTen + ' new tenants' : '') +
+          '</div>' : '') +
+      '</div>';
+
+    _trendTip.style.display = 'block';
+    _moveTrendTooltip(event);
+  }
+
+  function _moveTrendTooltip(event) {
+    if (!_trendTip || _trendTip.style.display === 'none') return;
+    const x = event.clientX, y = event.clientY;
+    const tw = _trendTip.offsetWidth, th = _trendTip.offsetHeight;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    _trendTip.style.left = (x + 12 + tw > vw ? x - tw - 12 : x + 12) + 'px';
+    _trendTip.style.top  = (y - 10 + th > vh ? y - th - 10 : y - 10) + 'px';
+  }
+
+  function hideTrendTooltip() {
+    if (_trendTip) _trendTip.style.display = 'none';
   }
 
   /* ── GENERIC RENDER TABLE ──
