@@ -3129,7 +3129,14 @@
         if (exclSetNow.has(f.tenant.toLowerCase() + '||' + f.facility.toLowerCase())) return false;
         const d = parseDashDate(f.config || '');
         if (!d) return false;
-        return (Date.now() - d.getTime()) / 86400000 <= 7;
+        // Match the trend chart's current week bucket (Monday → today)
+        // so "new" in the card and "new" in the trend bar are consistent.
+        const _now = new Date();
+        const _mon = new Date(_now);
+        const _wd  = _mon.getDay();
+        _mon.setDate(_mon.getDate() + (_wd === 0 ? -6 : 1 - _wd));
+        _mon.setHours(0, 0, 0, 0);
+        return d >= _mon && d <= _now;
       });
       newW = newFacs.length;
       newT = new Set(newFacs.map(f => f.tenant.toLowerCase())).size;
@@ -3158,7 +3165,7 @@
             <div id="${feat}-summary-active-tenants" style="font-size:30px;font-weight:700;color:${color};line-height:1.1;text-decoration:underline;text-underline-offset:4px">${displayTenants}</div>
             ${newT > 0
               ? `<div style="font-size:11px;color:#2E7D32;margin-top:6px;font-weight:600;cursor:pointer" onclick="event.stopPropagation();goToDetails('new')" title="View new tenants">
-                   <span style="background:#E8F5E9;border-radius:4px;padding:1px 6px">+${newT} new · last 7 days ↗</span>
+                   <span style="background:#E8F5E9;border-radius:4px;padding:1px 6px">+${newT} new · this week ↗</span>
                  </div>`
               : `<div style="font-size:11px;color:var(--uc-secondary);margin-top:6px">No new adopters</div>`}
           </div>
@@ -3171,7 +3178,7 @@
             <div id="${feat}-summary-active-wh" style="font-size:30px;font-weight:700;color:${color};line-height:1.1;text-decoration:underline;text-underline-offset:4px">${displayWH}</div>
             ${newW > 0
               ? `<div style="font-size:11px;color:#2E7D32;margin-top:6px;font-weight:600;cursor:pointer" onclick="event.stopPropagation();goToDetails('new')" title="View new warehouses">
-                   <span style="background:#E8F5E9;border-radius:4px;padding:1px 6px">+${newW} new · last 7 days ↗</span>
+                   <span style="background:#E8F5E9;border-radius:4px;padding:1px 6px">+${newW} new · this week ↗</span>
                  </div>`
               : `<div style="font-size:11px;color:var(--uc-secondary);margin-top:6px">No new adopters</div>`}
           </div>
