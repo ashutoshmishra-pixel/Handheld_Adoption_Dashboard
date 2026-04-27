@@ -2488,9 +2488,11 @@
   // Monthly: fixed start March 2026, max 4 months (Mar → Jun as months pass).
   function getTrendWindow(period) {
     if (period === 'month') return { start: new Date('2026-03-01'), max: 4 };
-    // Weekly: go back 4 weeks (28 days) from today, then find that Monday
+    // Weekly: go back 3 weeks (21 days) from today so the 4 buckets are:
+    // [3 weeks ago Monday], [2 weeks ago], [last week], [this week → labeled "today"]
+    // e.g. on Apr 27: Apr 6, Apr 13, Apr 20, Apr 27
     const d = new Date();
-    d.setDate(d.getDate() - 28);
+    d.setDate(d.getDate() - 21);
     const day = d.getDay();
     d.setDate(d.getDate() + (day === 0 ? -6 : 1 - day)); // move to Monday
     return { start: d, max: 4 };
