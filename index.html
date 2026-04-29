@@ -3042,7 +3042,7 @@
   let _adoptionSummary  = null; // cached array of module objects from sheet
   let _backendDataLoaded = false; // true once applyBackendData has run
 
-  const TAM_LABELS  = { b2c: '6,00,000', b2b: '6,90,000', cc: '10,000' };
+  const TAM_LABELS  = { b2c: '3,00,000', b2b: '6,90,000', cc: '10,000' };
   const DRR_UNIT    = { b2c: 'picks',     b2b: 'picks',     cc: 'count scans' };
   const FEAT_STATUS_COLOR = {
     'Under Takeoff': 'background:#FFF3E0;color:#E65100',
@@ -3334,6 +3334,52 @@
     return e ? e.reason : null;
   }
 
+  // ── Shared exclusions: pull authoritative copy from backend on load ─────────
+  // The HHD_Exclusions sheet is the source of truth; localStorage is just a
+  // per-browser cache so isExcluded() can run synchronously during render.
+  async function syncExclusionsFromSheet() {
+    if (!SHEET_API_URL) return;
+    const result = await sheetFetch({ action: 'read_exclusions' });
+    if (!result || !Array.isArray(result.exclusions)) return;
+    // Replace local cache with sheet's authoritative copy
+    saveExclusions(result.exclusions);
+    // Re-render any tables that may have already drawn (race-safe)
+    if (typeof renderB2CTable === 'function') {
+      renderB2CTable(); renderB2BTable(); renderCCTable();
+    }
+    if (typeof updateSummaryInactiveCounts === 'function') updateSummaryInactiveCounts();
+    console.log('[Exclusions] Synced', result.exclusions.length, 'shared exclusions from sheet');
+  }
+
+  // Remove a previously-saved exclusion. Called from the "↩ Undo" button.
+  // Mirrors doConfirmExclude(): permission gate → localStorage → backend → re-render.
+  function removeExclusion(tenant, facility, feat) {
+    const authRaw = sessionStorage.getItem('hhd_gauth');
+    let userEmail = '';
+    try { userEmail = JSON.parse(authRaw || '{}').email || ''; } catch(e) {}
+
+    if (!EXCLUDE_ALLOWED.includes(userEmail.toLowerCase())) {
+      showToast('\uD83D\uDD12 Access Restricted', 'Please connect with Product to change facility type.', true);
+      return;
+    }
+
+    const all = loadExclusions().filter(function(e) {
+      return !(e.feat === feat &&
+               e.tenant.toLowerCase()   === tenant.toLowerCase() &&
+               e.facility.toLowerCase() === facility.toLowerCase());
+    });
+    saveExclusions(all);
+
+    // Push delete to backend so other users see it on their next load
+    if (SHEET_API_URL) {
+      sheetFetch({ action: 'delete_exclusion', feat: feat, tenant: tenant, facility: facility });
+    }
+
+    showToast('Exclusion Removed', tenant + ' restored to active list', false);
+    renderB2CTable(); renderB2BTable(); renderCCTable();
+    updateSummaryInactiveCounts();
+  }
+
   // ── Inline exclusion CTA (no modal) ──────────────────────────────────────────
   // When "Exclude" is clicked the button row expands inline with reason + confirm.
 
@@ -3399,9 +3445,16 @@
                e.tenant.toLowerCase()   === _excTenant.toLowerCase() &&
                e.facility.toLowerCase() === _excFacility.toLowerCase());
     });
-    all.push({ feat: _excFeat, tenant: _excTenant, facility: _excFacility,
-               reason: reason, excludedBy: userEmail, excludedAt: Date.now() });
+    const newExcl = { feat: _excFeat, tenant: _excTenant, facility: _excFacility,
+                      reason: reason, excludedBy: userEmail, excludedAt: Date.now() };
+    all.push(newExcl);
     saveExclusions(all);
+
+    // Push to backend so other users see it on their next load
+    if (SHEET_API_URL) {
+      sheetFetch({ action: 'save_exclusion', excl: JSON.stringify(newExcl) });
+    }
+
     showToast('Excluded', _excTenant + ' marked as ' + reason, false);
     _excTenant = ''; _excFacility = ''; _excFeat = ''; _excCellId = '';
     renderB2CTable(); renderB2BTable(); renderCCTable();
@@ -3594,10 +3647,11 @@
   renderCCTable();
   loadRedashData();
   loadTenantFacilityData();
-  syncFromSheet();           // pull CSM entries → merge into localStorage → re-render
-  syncIssuesFromSheet();     // pull tenant issues → merge into localStorage
-  fetchAdoptionSummary();    // pull live summary from Adoption Summary sheet
-  fetchBackendData();        // replace hardcoded facilities[] with live backend data
+  syncFromSheet();             // pull CSM entries → merge into localStorage → re-render
+  syncIssuesFromSheet();       // pull tenant issues → merge into localStorage
+  syncExclusionsFromSheet();   // pull shared staging exclusions → overwrite localStorage cache
+  fetchAdoptionSummary();      // pull live summary from Adoption Summary sheet
+  fetchBackendData();          // replace hardcoded facilities[] with live backend data
 </script>
 
 
