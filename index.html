@@ -661,6 +661,14 @@
 <div class="app-body">
   <!-- SIDEBAR — Feature Nav -->
   <aside class="sidebar">
+    <div class="sidebar-section-label">Analytics</div>
+
+    <div class="feat-nav-item" id="nav-tenant" onclick="switchFeature('tenant', this)">
+      <span class="feat-icon">🏢</span>
+      <span>Tenant Adoption</span>
+    </div>
+
+    <div class="feat-nav-divider"></div>
     <div class="sidebar-section-label">HHD Picking</div>
 
     <div class="feat-nav-item active" id="nav-b2c" onclick="switchFeature('b2c', this)">
@@ -682,14 +690,6 @@
       <span class="feat-icon">🔄</span>
       <span>Cycle Count</span>
       <span class="feat-nav-badge" style="background:rgba(245,127,23,0.25);color:#FFB74D">Beta UAT</span>
-    </div>
-
-    <div class="feat-nav-divider"></div>
-    <div class="sidebar-section-label">Analytics</div>
-
-    <div class="feat-nav-item" id="nav-tenant" onclick="switchFeature('tenant', this)">
-      <span class="feat-icon">🏢</span>
-      <span>Tenant Adoption</span>
     </div>
 
     <div class="feat-nav-divider"></div>
@@ -3914,14 +3914,34 @@
     { key: ['total_drr', 'total drr'],                label: 'Total DRR',        align: 'right', format: 'num' },
     { key: 'traceability',                            label: 'Traceability',     align: 'center', format: 'bool' },
     { key: ['handheld_user', 'handheld user'],         label: 'Handheld User',   align: 'center', format: 'bool' },
+    { key: '__details__',                              label: 'Details',         align: 'center', format: 'details' },
   ];
 
-  function _taColVal(row, col) {
-    if (Array.isArray(col.key)) {
-      for (const k of col.key) { if (row[k] != null) return row[k]; }
-      return '';
+  // Normalise a key to lowercase with all spaces/underscores collapsed — used for
+  // fuzzy column matching when Redash column names don't exactly match expectations.
+  function _taNorm(s) { return String(s).toLowerCase().replace(/[\s_]+/g, ''); }
+
+  // Pre-built lookup: normalised key → actual row key (built once per dataset).
+  let _taNormMap = null;
+  function _taGetNormMap(row) {
+    if (!_taNormMap) {
+      _taNormMap = {};
+      for (const k of Object.keys(row)) _taNormMap[_taNorm(k)] = k;
     }
-    return row[col.key] ?? '';
+    return _taNormMap;
+  }
+
+  function _taColVal(row, col) {
+    const keys = Array.isArray(col.key) ? col.key : [col.key];
+    // 1. Exact match
+    for (const k of keys) { if (row[k] != null) return row[k]; }
+    // 2. Normalised match (handles total_drr ↔ "total drr", warehouse_persona ↔ "warehouse persona" etc.)
+    const normMap = _taGetNormMap(row);
+    for (const k of keys) {
+      const actual = normMap[_taNorm(k)];
+      if (actual && row[actual] != null) return row[actual];
+    }
+    return '';
   }
 
   function _taEscHTML(s) {
@@ -3953,6 +3973,8 @@
         tenantAdoptionState.data    = rows;
         tenantAdoptionState.fetched = true;
         tenantAdoptionState.loading = false;
+        _taNormMap = null; // reset so it rebuilds against the new dataset
+        if (rows.length) console.log('[TenantAdoption] actual column names:', Object.keys(rows[0]));
         _buildPersonaChips();
         renderTenantAdoptionTable();
       })
@@ -3985,6 +4007,11 @@
       .forEach(c => c.classList.remove('active'));
     el.classList.add('active');
     renderTenantAdoptionTable();
+  }
+
+  // Stub — behaviour defined later by the product team
+  function openTenantAdoptionDetails(tenant, displayName) {
+    showToast('📋 Details', (displayName || tenant) + ' — coming soon', false);
   }
 
   function sortTenantTable(colIdx) {
@@ -4053,7 +4080,17 @@
         : '<span style="margin-left:3px">↓</span>';
     };
 
-    const formatCell = (val, col) => {
+    const formatCell = (val, col, row) => {
+      if (col.format === 'details') {
+        // Placeholder — action wired in later
+        const tenant      = _taEscHTML(_taColVal(row, TENANT_COLS[0]));
+        const displayName = _taEscHTML(_taColVal(row, TENANT_COLS[2]));
+        return `<button onclick="openTenantAdoptionDetails('${tenant}','${displayName}')"
+                  style="padding:3px 10px;font-size:11px;border:1px solid var(--uc-border);
+                         border-radius:5px;background:var(--uc-white);cursor:pointer;
+                         color:var(--uc-primary);font-family:inherit;font-weight:600;
+                         white-space:nowrap">📋 Details</button>`;
+      }
       if (col.format === 'num') {
         const n = Number(val);
         return (isNaN(n) || val === '') ? '<span style="color:var(--uc-disabled)">—</span>'
@@ -4073,15 +4110,16 @@
 
     wrap.innerHTML =
       '<table class="uc-table" style="width:100%"><thead><tr>' +
-      TENANT_COLS.map((col, i) =>
-        `<th style="text-align:${col.align};cursor:pointer;user-select:none;white-space:nowrap"
-             onclick="sortTenantTable(${i})">${col.label}${sortIcon(i)}</th>`
-      ).join('') +
+      TENANT_COLS.map((col, i) => {
+        const isDetails = col.format === 'details';
+        return `<th style="text-align:${col.align};${isDetails ? '' : 'cursor:pointer;'}user-select:none;white-space:nowrap"
+             ${isDetails ? '' : `onclick="sortTenantTable(${i})"`}>${col.label}${isDetails ? '' : sortIcon(i)}</th>`;
+      }).join('') +
       '</tr></thead><tbody>' +
       rows.map(r =>
         '<tr>' +
         TENANT_COLS.map(col =>
-          `<td style="text-align:${col.align}">${formatCell(_taColVal(r, col), col)}</td>`
+          `<td style="text-align:${col.align}">${formatCell(_taColVal(r, col), col, r)}</td>`
         ).join('') +
         '</tr>'
       ).join('') +
