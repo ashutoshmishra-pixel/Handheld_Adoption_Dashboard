@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Handheld Adoption & Training — Unicommerce</title>
+  <title>Feature Adoption Dashboard — Unicommerce</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <!-- Google Identity Services for domain-restricted login -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -646,7 +646,7 @@
 <nav class="top-nav">
   <div class="top-nav__logo"><span class="logo-uni">uni</span><span class="logo-ware">ware</span></div>
   <div class="top-nav__divider"></div>
-  <span class="top-nav__title">Handheld Adoption &amp; Training Hub</span>
+  <span class="top-nav__title">Feature Adoption Dashboard</span>
   <span class="top-nav__badge">Internal</span>
   <div class="top-nav__spacer"></div>
   <div id="nav-tf-status" style="font-size:11px;color:#757575;display:flex;align-items:center;gap:6px;margin-right:8px"></div>
@@ -682,6 +682,14 @@
       <span class="feat-icon">🔄</span>
       <span>Cycle Count</span>
       <span class="feat-nav-badge" style="background:rgba(245,127,23,0.25);color:#FFB74D">Beta UAT</span>
+    </div>
+
+    <div class="feat-nav-divider"></div>
+    <div class="sidebar-section-label">Analytics</div>
+
+    <div class="feat-nav-item" id="nav-tenant" onclick="switchFeature('tenant', this)">
+      <span class="feat-icon">🏢</span>
+      <span>Tenant Adoption</span>
     </div>
 
     <div class="feat-nav-divider"></div>
@@ -1338,6 +1346,44 @@
     </div><!-- /feat-cc -->
 
 
+    <!-- ╔══════════════════════════════════════════╗ -->
+    <!-- ║  TENANT ADOPTION — ALL FEATURES          ║ -->
+    <!-- ╚══════════════════════════════════════════╝ -->
+    <div class="feat-panel" id="feat-tenant">
+      <div class="section-panel active" id="tenant-panel-0">
+
+        <div class="section-title">Tenant Adoption — All Features</div>
+        <div class="section-sub" style="margin-bottom:16px">Cross-feature view of all tenants and their warehouse personas, DRR, traceability, and handheld usage. Pulled live from Redash.</div>
+
+        <!-- Toolbar -->
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+          <input type="text" id="tenant-adoption-search"
+                 placeholder="🔍  Search tenant, facility, persona…"
+                 style="padding:7px 12px;border:1px solid var(--uc-border);border-radius:6px;
+                        font-size:13px;width:290px;outline:none;font-family:inherit;
+                        background:var(--uc-white)"
+                 oninput="renderTenantAdoptionTable()" />
+          <div id="tenant-persona-chips" class="rag-chips" style="margin-bottom:0"></div>
+          <button onclick="loadTenantAdoptionData(true)"
+                  style="margin-left:auto;padding:6px 14px;background:var(--uc-white);
+                         border:1px solid var(--uc-border);border-radius:6px;font-size:12px;
+                         cursor:pointer;display:flex;align-items:center;gap:5px;
+                         font-family:inherit;color:var(--uc-secondary)"
+                  title="Refresh from Redash">🔄 Refresh</button>
+        </div>
+
+        <!-- Row count -->
+        <div id="tenant-adoption-meta" style="font-size:12px;color:var(--uc-secondary);margin-bottom:8px"></div>
+
+        <!-- Table -->
+        <div id="tenant-adoption-table-wrap" class="table-wrap">
+          <div style="text-align:center;color:var(--uc-secondary);padding:40px;font-size:13px">
+            Click <strong>Tenant Adoption</strong> in the sidebar to load data…
+          </div>
+        </div>
+
+      </div><!-- /tenant-panel-0 -->
+    </div><!-- /feat-tenant -->
 
 
     </div><!-- /scroll-area -->
@@ -1415,9 +1461,10 @@
   let activeSubTab  = 0;
 
   const featureConfig = {
-    b2c: { prefix: 'b2c-panel', count: 5 },
-    b2b: { prefix: 'b2b-panel', count: 5 },
-    cc:  { prefix: 'cc-panel',  count: 5 },
+    b2c:    { prefix: 'b2c-panel',    count: 5 },
+    b2b:    { prefix: 'b2b-panel',    count: 5 },
+    cc:     { prefix: 'cc-panel',     count: 5 },
+    tenant: { prefix: 'tenant-panel', count: 1 },
   };
 
   function switchFeature(featureId, el) {
@@ -1432,24 +1479,36 @@
     document.querySelectorAll('.feat-panel').forEach(p => p.classList.remove('active'));
     document.getElementById('feat-' + featureId).classList.add('active');
 
-    // Reset sub-tab to 0
-    activeSubTab = 0;
-    document.querySelectorAll('.page-tab').forEach((t, i) => {
-      t.classList.toggle('active', i === 0);
-    });
+    // Show/hide the sub-tabs bar — not relevant for the cross-feature Tenant Adoption screen
+    const subTabsBar = document.getElementById('sub-tabs-bar');
+    if (subTabsBar) subTabsBar.style.display = featureId === 'tenant' ? 'none' : '';
 
-    // Show first sub-panel of new feature
-    const cfg = featureConfig[featureId];
-    for (let i = 0; i < cfg.count; i++) {
-      const panel = document.getElementById(cfg.prefix + '-' + i);
-      if (panel) panel.classList.toggle('active', i === 0);
+    if (featureId === 'tenant') {
+      // Ensure panel-0 is visible and kick off the lazy data load
+      const panel = document.getElementById('tenant-panel-0');
+      if (panel) panel.classList.add('active');
+      loadTenantAdoptionData();
+    } else {
+      // Reset sub-tab to 0
+      activeSubTab = 0;
+      document.querySelectorAll('.page-tab').forEach((t, i) => {
+        t.classList.toggle('active', i === 0);
+      });
+
+      // Show first sub-panel of new feature
+      const cfg = featureConfig[featureId];
+      for (let i = 0; i < cfg.count; i++) {
+        const panel = document.getElementById(cfg.prefix + '-' + i);
+        if (panel) panel.classList.toggle('active', i === 0);
+      }
+
+      if (featureId === 'b2c') renderB2CTable();
+      if (featureId === 'b2b') renderB2BTable();
+      if (featureId === 'cc')  renderCCTable();
+      renderSummaryCard(featureId); // refresh sheet-driven summary card for the new feature
     }
 
     document.querySelector('.scroll-area').scrollTop = 0;
-    if (featureId === 'b2c') renderB2CTable();
-    if (featureId === 'b2b') renderB2BTable();
-    if (featureId === 'cc')  renderCCTable();
-    renderSummaryCard(featureId); // refresh sheet-driven summary card for the new feature
   }
 
   function switchSubTab(idx, el) {
@@ -3835,6 +3894,200 @@
     }
   };
 
+  /* ── TENANT ADOPTION — cross-feature view from Redash query 8627 ── */
+  const TENANT_ADOPTION_API =
+    'https://redash.unicommerce.com/api/queries/8627/results.json' +
+    '?api_key=VwCv9d6Gvc7F3nnSer4XgiqXiBDZ2vrRYQYJuwu9';
+
+  const tenantAdoptionState = {
+    fetched: false, loading: false, data: [], error: null,
+    personaFilter: 'all', sortCol: null, sortDir: 1,
+  };
+
+  // Column definitions — key can be an array to try multiple Redash column name variants
+  const TENANT_COLS = [
+    { key: 'tenant',                                  label: 'Tenant',           align: 'left'   },
+    { key: 'product_code',                            label: 'Product Code',     align: 'left'   },
+    { key: 'display_name',                            label: 'Display Name',     align: 'left'   },
+    { key: ['warehouse_persona', 'warehouse persona'], label: 'Warehouse Persona', align: 'left' },
+    { key: ['b2b_drr', 'b2b drr'],                    label: 'B2B DRR',          align: 'right', format: 'num' },
+    { key: ['b2c_drr', 'b2c drr'],                    label: 'B2C DRR',          align: 'right', format: 'num' },
+    { key: ['total_drr', 'total drr'],                label: 'Total DRR',        align: 'right', format: 'num' },
+    { key: 'traceability',                            label: 'Traceability',     align: 'center', format: 'bool' },
+    { key: ['handheld_user', 'handheld user'],         label: 'Handheld User',   align: 'center', format: 'bool' },
+  ];
+
+  function _taColVal(row, col) {
+    if (Array.isArray(col.key)) {
+      for (const k of col.key) { if (row[k] != null) return row[k]; }
+      return '';
+    }
+    return row[col.key] ?? '';
+  }
+
+  function _taEscHTML(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function loadTenantAdoptionData(force) {
+    if (!force && (tenantAdoptionState.fetched || tenantAdoptionState.loading)) {
+      renderTenantAdoptionTable();
+      return;
+    }
+    tenantAdoptionState.loading = true;
+    tenantAdoptionState.error = null;
+
+    const wrap = document.getElementById('tenant-adoption-table-wrap');
+    const meta = document.getElementById('tenant-adoption-meta');
+    if (wrap) wrap.innerHTML =
+      '<div style="text-align:center;color:var(--uc-secondary);padding:40px;font-size:13px">⏳ Loading from Redash…</div>';
+    if (meta) meta.textContent = '';
+
+    fetch(TENANT_ADOPTION_API, { mode: 'cors' })
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(json => {
+        const rows = json?.query_result?.data?.rows || [];
+        tenantAdoptionState.data    = rows;
+        tenantAdoptionState.fetched = true;
+        tenantAdoptionState.loading = false;
+        _buildPersonaChips();
+        renderTenantAdoptionTable();
+      })
+      .catch(err => {
+        tenantAdoptionState.loading = false;
+        tenantAdoptionState.error   = err.message;
+        const wrap2 = document.getElementById('tenant-adoption-table-wrap');
+        if (wrap2) wrap2.innerHTML =
+          '<div style="text-align:center;color:var(--uc-error);padding:40px;font-size:13px">' +
+          '⚠️ Failed to load: ' + _taEscHTML(err.message) + '<br>' +
+          '<small style="color:var(--uc-secondary)">Make sure you are on the Unicommerce network / VPN</small></div>';
+      });
+  }
+
+  function _buildPersonaChips() {
+    const personas = [...new Set(
+      tenantAdoptionState.data.map(r => r.warehouse_persona || r['warehouse persona'] || '')
+    )].filter(Boolean).sort();
+    const container = document.getElementById('tenant-persona-chips');
+    if (!container) return;
+    container.innerHTML =
+      '<div class="rag-chip active" onclick="setTenantPersonaFilter(\'all\',this)">All</div>' +
+      personas.map(p =>
+        `<div class="rag-chip" onclick="setTenantPersonaFilter('${_taEscHTML(p)}',this)">${_taEscHTML(p)}</div>`
+      ).join('');
+  }
+
+  function setTenantPersonaFilter(persona, el) {
+    tenantAdoptionState.personaFilter = persona;
+    el.closest('.rag-chips').querySelectorAll('.rag-chip')
+      .forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderTenantAdoptionTable();
+  }
+
+  function sortTenantTable(colIdx) {
+    if (tenantAdoptionState.sortCol === colIdx) {
+      tenantAdoptionState.sortDir *= -1;
+    } else {
+      tenantAdoptionState.sortCol = colIdx;
+      tenantAdoptionState.sortDir = 1;
+    }
+    renderTenantAdoptionTable();
+  }
+
+  function renderTenantAdoptionTable() {
+    const wrap = document.getElementById('tenant-adoption-table-wrap');
+    const meta = document.getElementById('tenant-adoption-meta');
+    if (!wrap) return;
+    if (!tenantAdoptionState.fetched) { loadTenantAdoptionData(); return; }
+
+    let rows = [...tenantAdoptionState.data];
+
+    // Search filter
+    const q = (document.getElementById('tenant-adoption-search')?.value || '').toLowerCase().trim();
+    if (q) {
+      rows = rows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
+    }
+
+    // Persona chip filter
+    const pf = tenantAdoptionState.personaFilter;
+    if (pf && pf !== 'all') {
+      rows = rows.filter(r =>
+        (r.warehouse_persona || r['warehouse persona'] || '') === pf
+      );
+    }
+
+    // Sorting
+    const { sortCol, sortDir } = tenantAdoptionState;
+    if (sortCol != null) {
+      const col = TENANT_COLS[sortCol];
+      rows.sort((a, b) => {
+        const av = _taColVal(a, col), bv = _taColVal(b, col);
+        const an = Number(av), bn = Number(bv);
+        if (!isNaN(an) && !isNaN(bn)) return (an - bn) * sortDir;
+        return String(av).localeCompare(String(bv)) * sortDir;
+      });
+    }
+
+    // Row count
+    if (meta) {
+      meta.textContent = rows.length + ' rows' +
+        (rows.length < tenantAdoptionState.data.length
+          ? ' (filtered from ' + tenantAdoptionState.data.length + ' total)'
+          : ' total');
+    }
+
+    if (!rows.length) {
+      wrap.innerHTML =
+        '<div style="text-align:center;color:var(--uc-secondary);padding:40px;font-size:13px">No matching rows</div>';
+      return;
+    }
+
+    const sortIcon = i => {
+      if (tenantAdoptionState.sortCol !== i)
+        return '<span style="opacity:0.3;font-size:10px;margin-left:3px">⇅</span>';
+      return tenantAdoptionState.sortDir === 1
+        ? '<span style="margin-left:3px">↑</span>'
+        : '<span style="margin-left:3px">↓</span>';
+    };
+
+    const formatCell = (val, col) => {
+      if (col.format === 'num') {
+        const n = Number(val);
+        return (isNaN(n) || val === '') ? '<span style="color:var(--uc-disabled)">—</span>'
+          : n.toLocaleString('en-IN');
+      }
+      if (col.format === 'bool') {
+        const v = String(val).toLowerCase();
+        if (v === 'true' || v === '1' || v === 'yes')
+          return '<span style="color:var(--uc-success);font-weight:600">✓ Yes</span>';
+        if (v === 'false' || v === '0' || v === 'no')
+          return '<span style="color:var(--uc-secondary)">— No</span>';
+        return _taEscHTML(val) || '<span style="color:var(--uc-disabled)">—</span>';
+      }
+      const s = _taEscHTML(String(val == null ? '' : val));
+      return s || '<span style="color:var(--uc-disabled)">—</span>';
+    };
+
+    wrap.innerHTML =
+      '<table class="uc-table" style="width:100%"><thead><tr>' +
+      TENANT_COLS.map((col, i) =>
+        `<th style="text-align:${col.align};cursor:pointer;user-select:none;white-space:nowrap"
+             onclick="sortTenantTable(${i})">${col.label}${sortIcon(i)}</th>`
+      ).join('') +
+      '</tr></thead><tbody>' +
+      rows.map(r =>
+        '<tr>' +
+        TENANT_COLS.map(col =>
+          `<td style="text-align:${col.align}">${formatCell(_taColVal(r, col), col)}</td>`
+        ).join('') +
+        '</tr>'
+      ).join('') +
+      '</tbody></table>';
+  }
+
   /* ── INIT ── */
   renderB2CTable();
   renderB2BTable();
@@ -3856,7 +4109,7 @@
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
       <div style="font-size:28px">📦</div>
       <div>
-        <div style="font-weight:700;font-size:18px;color:#212121">HHD Adoption & Training Hub</div>
+        <div style="font-weight:700;font-size:18px;color:#212121">Feature Adoption Dashboard</div>
         <div style="font-size:12px;color:#9E9E9E;margin-top:2px">Unicommerce Internal · Handheld picking & cycle count tracking</div>
       </div>
     </div>
