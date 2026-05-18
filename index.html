@@ -3894,10 +3894,9 @@
     }
   };
 
-  /* ── TENANT ADOPTION — cross-feature view from Redash query 8627 ── */
-  const TENANT_ADOPTION_API =
-    'https://redash.unicommerce.com/api/queries/8627/results.json' +
-    '?api_key=VwCv9d6Gvc7F3nnSer4XgiqXiBDZ2vrRYQYJuwu9';
+  /* ── TENANT ADOPTION — cross-feature view, proxied via Apps Script (avoids CORS) ── */
+  // Direct Redash calls are blocked by CORS from GitHub Pages. The Apps Script backend
+  // fetches from Redash server-side and returns the rows via ?action=fetch_tenant_adoption.
 
   const tenantAdoptionState = {
     fetched: false, loading: false, data: [], error: null,
@@ -3945,10 +3944,13 @@
       '<div style="text-align:center;color:var(--uc-secondary);padding:40px;font-size:13px">⏳ Loading from Redash…</div>';
     if (meta) meta.textContent = '';
 
-    fetch(TENANT_ADOPTION_API, { mode: 'cors' })
+    // Route through Apps Script backend — avoids CORS restrictions from GitHub Pages
+    const proxyUrl = SHEET_API_URL + '?action=fetch_tenant_adoption';
+    fetch(proxyUrl)
       .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(json => {
-        const rows = json?.query_result?.data?.rows || [];
+        if (json.error) throw new Error(json.error);
+        const rows = json.rows || [];
         tenantAdoptionState.data    = rows;
         tenantAdoptionState.fetched = true;
         tenantAdoptionState.loading = false;
@@ -3961,8 +3963,7 @@
         const wrap2 = document.getElementById('tenant-adoption-table-wrap');
         if (wrap2) wrap2.innerHTML =
           '<div style="text-align:center;color:var(--uc-error);padding:40px;font-size:13px">' +
-          '⚠️ Failed to load: ' + _taEscHTML(err.message) + '<br>' +
-          '<small style="color:var(--uc-secondary)">Make sure you are on the Unicommerce network / VPN</small></div>';
+          '⚠️ Failed to load: ' + _taEscHTML(err.message) + '</div>';
       });
   }
 
