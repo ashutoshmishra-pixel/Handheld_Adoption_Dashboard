@@ -3944,12 +3944,11 @@
       '<div style="text-align:center;color:var(--uc-secondary);padding:40px;font-size:13px">⏳ Loading from Redash…</div>';
     if (meta) meta.textContent = '';
 
-    // Route through Apps Script backend — avoids CORS restrictions from GitHub Pages
-    const proxyUrl = SHEET_API_URL + '?action=fetch_tenant_adoption';
-    fetch(proxyUrl)
-      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    // Route through Apps Script backend via the shared sheetFetch() wrapper
+    // (uses { redirect: 'follow' } — required because Apps Script web apps redirect)
+    sheetFetch({ action: 'fetch_tenant_adoption' })
       .then(json => {
-        if (json.error) throw new Error(json.error);
+        if (!json) throw new Error('No response from backend');
         const rows = json.rows || [];
         tenantAdoptionState.data    = rows;
         tenantAdoptionState.fetched = true;
