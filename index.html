@@ -707,8 +707,9 @@
     <div class="page-tabs" id="sub-tabs-bar">
       <div class="page-tab active" onclick="switchSubTab(0,this)">📊 Adoption Summary</div>
       <div class="page-tab" onclick="switchSubTab(1,this)">📋 Tenant Adoption Details</div>
-      <div class="page-tab" onclick="switchSubTab(2,this)">🎓 CSM Training Hub</div>
-      <div class="page-tab" onclick="switchSubTab(3,this)">🚀 Pitch &amp; Roadmap</div>
+      <div class="page-tab" onclick="switchSubTab(2,this)">🎯 Pending Tenants</div>
+      <div class="page-tab" onclick="switchSubTab(3,this)">🎓 CSM Training Hub</div>
+      <div class="page-tab" onclick="switchSubTab(4,this)">🚀 Pitch &amp; Roadmap</div>
     </div>
 
     <div class="scroll-area">
@@ -787,9 +788,37 @@
 
 
       <!-- ══════════════════════════════════════════════════
-           B2C — SUB-TAB 3: CSM TRAINING HUB
+           B2C — SUB-TAB 2: PENDING TENANTS
       ══════════════════════════════════════════════════ -->
       <div class="section-panel" id="b2c-panel-2">
+        <div class="section-title">B2C Picking — Pending Tenants</div>
+        <div class="section-sub">Eligible tenants (max monthly B2C DRR &gt; 1,000) where no facility has been migrated yet. Use this list to plan next adoption candidates.</div>
+
+        <div style="display:flex;gap:12px;align-items:center;margin:14px 0">
+          <div id="b2c-pending-meta" style="font-size:13px;color:var(--uc-text-muted)">Loading…</div>
+          <div style="flex:1"></div>
+          <button class="export-btn" onclick="fetchPendingTenants('b2c', true)" style="font-size:12px">↻ Refresh</button>
+        </div>
+
+        <div class="uc-table-wrap">
+          <table class="uc-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tenant</th>
+                <th style="text-align:right">B2C DRR</th>
+              </tr>
+            </thead>
+            <tbody id="b2c-pending-tbody"></tbody>
+          </table>
+        </div>
+      </div><!-- /b2c-panel-2 -->
+
+
+      <!-- ══════════════════════════════════════════════════
+           B2C — SUB-TAB 3: CSM TRAINING HUB
+      ══════════════════════════════════════════════════ -->
+      <div class="section-panel" id="b2c-panel-3">
         <div class="section-title">B2C Picking — CSM Training Hub</div>
         <div class="section-sub">Step-by-step GIF training — silent, looping animations showing each action on the handheld</div>
 
@@ -925,13 +954,13 @@
               </div>
             </div>
         </div>
-      </div><!-- /b2c-panel-2 -->
+      </div><!-- /b2c-panel-3 -->
 
 
       <!-- ══════════════════════════════════════════════════
            B2C — SUB-TAB 4: PITCH & ROADMAP
       ══════════════════════════════════════════════════ -->
-      <div class="section-panel" id="b2c-panel-3">
+      <div class="section-panel" id="b2c-panel-4">
         <div class="section-title">Pitch Points &amp; Product Roadmap</div>
         <div class="section-sub">Talking points for clients and prospects · Roadmap visible to all stakeholders</div>
         <div style="font-size:11px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">Why Switch to Handheld?</div>
@@ -977,7 +1006,7 @@
             </div>
           </div>
         </div></div>
-      </div><!-- /b2c-panel-3 -->
+      </div><!-- /b2c-panel-4 -->
 
     </div><!-- /feat-b2c -->
 
@@ -1050,8 +1079,33 @@
         </div>
       </div><!-- /b2b-panel-1 -->
 
-      <!-- B2B — SUB-TAB 3: TRAINING -->
+      <!-- B2B — SUB-TAB 2: PENDING TENANTS -->
       <div class="section-panel" id="b2b-panel-2">
+        <div class="section-title">B2B Picking — Pending Tenants</div>
+        <div class="section-sub">Eligible tenants (max monthly B2B DRR &gt; 1,000) where no facility has been migrated yet. Use this list to plan next adoption candidates.</div>
+
+        <div style="display:flex;gap:12px;align-items:center;margin:14px 0">
+          <div id="b2b-pending-meta" style="font-size:13px;color:var(--uc-text-muted)">Loading…</div>
+          <div style="flex:1"></div>
+          <button class="export-btn" onclick="fetchPendingTenants('b2b', true)" style="font-size:12px">↻ Refresh</button>
+        </div>
+
+        <div class="uc-table-wrap">
+          <table class="uc-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tenant</th>
+                <th style="text-align:right">B2B DRR</th>
+              </tr>
+            </thead>
+            <tbody id="b2b-pending-tbody"></tbody>
+          </table>
+        </div>
+      </div><!-- /b2b-panel-2 -->
+
+      <!-- B2B — SUB-TAB 3: TRAINING -->
+      <div class="section-panel" id="b2b-panel-3">
         <div class="section-title">B2B Picking — CSM Training Hub</div>
         <div class="section-sub">Step-by-step GIF training for B2B picking with Handling Units — silent, looping animations</div>
 
@@ -1139,12 +1193,12 @@
               </div>
             </div>
         </div>
-      </div><!-- /b2b-panel-2 -->
+      </div><!-- /b2b-panel-3 -->
 
 
 
       <!-- B2B — SUB-TAB 4: PITCH -->
-      <div class="section-panel" id="b2b-panel-3">
+      <div class="section-panel" id="b2b-panel-4">
         <div class="section-title">B2B Picking — Pitch Points</div>
         <div class="section-sub">Talking points for selling B2B HH picking to clients</div>
         <div class="pitch-grid">
@@ -1153,7 +1207,7 @@
           <div class="pitch-card"><div class="pitch-icon">🎯</div><div class="pitch-title">Zero Carton Mismatch</div><div class="pitch-body">Barcode validation at HU sealing catches wrong items before they leave the warehouse.</div><div class="pitch-stat">~65%<div class="pitch-stat-label">drop in carton mismatch errors</div></div></div>
           <div class="pitch-card"><div class="pitch-icon">📊</div><div class="pitch-title">Picker Productivity Tracking</div><div class="pitch-body">Every pick is timestamped and linked to the picker. Managers get real-time visibility into B2B fulfilment performance.</div><div class="pitch-stat">Per-user<div class="pitch-stat-label">analytics in WMS dashboard</div></div></div>
         </div>
-      </div><!-- /b2b-panel-3 -->
+      </div><!-- /b2b-panel-4 -->
 
     </div><!-- /feat-b2b -->
 
@@ -1226,8 +1280,33 @@
         </div>
       </div><!-- /cc-panel-1 -->
 
-      <!-- SUB-TAB 3 — CC TRAINING -->
+      <!-- CC — SUB-TAB 2: PENDING TENANTS -->
       <div class="section-panel" id="cc-panel-2">
+        <div class="section-title">Cycle Count — Pending Tenants</div>
+        <div class="section-sub">Eligible tenants (max monthly Cycle Count DRR &gt; 1,000) where no facility has been migrated yet. Use this list to plan next adoption candidates.</div>
+
+        <div style="display:flex;gap:12px;align-items:center;margin:14px 0">
+          <div id="cc-pending-meta" style="font-size:13px;color:var(--uc-text-muted)">Loading…</div>
+          <div style="flex:1"></div>
+          <button class="export-btn" onclick="fetchPendingTenants('cc', true)" style="font-size:12px">↻ Refresh</button>
+        </div>
+
+        <div class="uc-table-wrap">
+          <table class="uc-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Tenant</th>
+                <th style="text-align:right">CC DRR</th>
+              </tr>
+            </thead>
+            <tbody id="cc-pending-tbody"></tbody>
+          </table>
+        </div>
+      </div><!-- /cc-panel-2 -->
+
+      <!-- SUB-TAB 3 — CC TRAINING -->
+      <div class="section-panel" id="cc-panel-3">
         <div class="section-title">Cycle Count — CSM Training Hub</div>
         <div class="section-sub">Training resources for Cycle Count on handheld</div>
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -1240,12 +1319,12 @@
             Check back soon — content will appear here once ready.
           </div>
         </div>
-      </div><!-- /cc-panel-2 -->
+      </div><!-- /cc-panel-3 -->
 
 
 
       <!-- SUB-TAB 4 — CC PITCH -->
-      <div class="section-panel" id="cc-panel-3">
+      <div class="section-panel" id="cc-panel-4">
         <div class="section-title">Cycle Count — Pitch Points</div>
         <div class="section-sub">Talking points for selling Cycle Count on handheld to clients</div>
         <div class="pitch-grid">
@@ -1254,7 +1333,7 @@
           <div class="pitch-card"><div class="pitch-icon">📊</div><div class="pitch-title">Inventory Accuracy ↑</div><div class="pitch-body">Clients report significant improvement in fill rate and SLA compliance after adopting digital cycle counts.</div><div class="pitch-stat">~40%<div class="pitch-stat-label">reduction in inventory write-offs (avg)</div></div></div>
           <div class="pitch-card"><div class="pitch-icon">🔒</div><div class="pitch-title">Audit-Ready Records</div><div class="pitch-body">Every count session is timestamped, linked to the counter, and approved by WH Manager — full traceability.</div><div class="pitch-stat">100%<div class="pitch-stat-label">digital audit trail</div></div></div>
         </div>
-      </div><!-- /cc-panel-3 -->
+      </div><!-- /cc-panel-4 -->
 
     </div><!-- /feat-cc -->
 
@@ -1336,9 +1415,9 @@
   let activeSubTab  = 0;
 
   const featureConfig = {
-    b2c: { prefix: 'b2c-panel', count: 4 },
-    b2b: { prefix: 'b2b-panel', count: 4 },
-    cc:  { prefix: 'cc-panel',  count: 4 },
+    b2c: { prefix: 'b2c-panel', count: 5 },
+    b2b: { prefix: 'b2b-panel', count: 5 },
+    cc:  { prefix: 'cc-panel',  count: 5 },
   };
 
   function switchFeature(featureId, el) {
@@ -3618,9 +3697,10 @@
 
   function applyTabVisibility(email) {
     if ((email || '').toLowerCase() === ADMIN_TABS_EMAIL) return; // full access
-    // Hide "CSM Training Hub" (index 2) and "Pitch & Roadmap" (index 3) for everyone else
+    // Hide "CSM Training Hub" (index 3) and "Pitch & Roadmap" (index 4) for everyone else.
+    // "Pending Tenants" (index 2) is visible to all CSMs.
     document.querySelectorAll('.page-tab').forEach((tab, idx) => {
-      if (idx === 2 || idx === 3) tab.style.display = 'none';
+      if (idx === 3 || idx === 4) tab.style.display = 'none';
     });
   }
 
@@ -3640,6 +3720,120 @@
       localStorage.setItem(WELCOME_KEY, '1');
     }
   }
+
+  /* ── PENDING TENANTS — eligible tenants not yet migrated ──────────────────── */
+  // Static list per feature (max monthly DRR > 1000 in source sheet),
+  // filtered against live facilities[] to drop tenants that already have a
+  // facility migrated for that feature. Lazy-fetched on first tab open.
+  const pendingState = {
+    b2c: { fetched: false, loading: false, data: [], error: null, configured: null },
+    b2b: { fetched: false, loading: false, data: [], error: null, configured: null },
+    cc:  { fetched: false, loading: false, data: [], error: null, configured: null },
+  };
+
+  function escapeTenantHTML(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function getMigratedTenantSet(feat) {
+    // Tenants that already have at least one facility live for `feat`.
+    const set = new Set();
+    if (typeof facilities !== 'undefined' && Array.isArray(facilities)) {
+      facilities.forEach(f => {
+        if (f && f['_in_' + feat]) {
+          set.add(String(f.tenant || '').trim().toLowerCase());
+        }
+      });
+    }
+    return set;
+  }
+
+  async function fetchPendingTenants(feat, force) {
+    const state = pendingState[feat];
+    if (!state) return;
+    if (state.loading) return;
+    if (state.fetched && !force) { renderPendingTenants(feat); return; }
+    state.loading = true;
+    renderPendingTenants(feat); // show "Loading…" state
+    try {
+      const result = await sheetFetch({ action: 'read_pending_tenants', feat });
+      if (result && Array.isArray(result.tenants)) {
+        state.data       = result.tenants;
+        state.configured = result.configured !== false;
+        state.error      = result.error || null;
+      } else {
+        state.data       = [];
+        state.configured = result && result.configured === false ? false : null;
+        state.error      = (result && (result.error || result.message)) || 'No data returned';
+      }
+      state.fetched = true;
+    } catch (e) {
+      state.error   = e && e.message ? e.message : String(e);
+      state.fetched = true;
+    } finally {
+      state.loading = false;
+      renderPendingTenants(feat);
+    }
+  }
+
+  function renderPendingTenants(feat) {
+    const state = pendingState[feat];
+    if (!state) return;
+    const tbody = document.getElementById(feat + '-pending-tbody');
+    const meta  = document.getElementById(feat + '-pending-meta');
+    if (!tbody || !meta) return;
+
+    if (state.loading && !state.fetched) {
+      meta.textContent = 'Loading eligible tenants…';
+      tbody.innerHTML  = '<tr><td colspan="3" style="text-align:center;color:var(--uc-secondary);padding:30px">Loading…</td></tr>';
+      return;
+    }
+    if (state.configured === false) {
+      meta.textContent = '';
+      tbody.innerHTML  = '<tr><td colspan="3" style="text-align:center;color:var(--uc-secondary);padding:30px">Source data not yet provided for this feature.</td></tr>';
+      return;
+    }
+    if (state.error && !state.data.length) {
+      meta.textContent = '';
+      tbody.innerHTML  = '<tr><td colspan="3" style="text-align:center;color:var(--uc-secondary);padding:30px">Could not load pending tenants: ' + escapeTenantHTML(state.error) + '</td></tr>';
+      return;
+    }
+
+    const migrated = getMigratedTenantSet(feat);
+    const pending  = state.data.filter(t => !migrated.has(String(t.tenant || '').trim().toLowerCase()));
+    const drrLabel = feat === 'b2c' ? 'B2C' : feat === 'b2b' ? 'B2B' : 'CC';
+
+    meta.innerHTML = '<strong>' + pending.length + '</strong> pending · ' +
+                     state.data.length + ' eligible · ' +
+                     migrated.size + ' already migrated';
+
+    if (!pending.length) {
+      tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--uc-secondary);padding:30px">All eligible tenants are already migrated 🎉</td></tr>';
+      return;
+    }
+    tbody.innerHTML = pending.map((t, i) =>
+      '<tr>' +
+        '<td>' + (i + 1) + '</td>' +
+        '<td><strong>' + escapeTenantHTML(t.tenant) + '</strong></td>' +
+        '<td style="text-align:right;font-variant-numeric:tabular-nums">' +
+          (Number(t.maxDrr) || 0).toLocaleString('en-IN') +
+        '</td>' +
+      '</tr>'
+    ).join('');
+  }
+
+  // Lazy-load Pending Tenants when its sub-tab is activated.
+  const _origSwitchSubTab = switchSubTab;
+  switchSubTab = function(idx, el) {
+    _origSwitchSubTab(idx, el);
+    if (idx === 2) {
+      const feat = activeFeature;
+      const state = pendingState[feat];
+      if (state && !state.fetched && !state.loading) fetchPendingTenants(feat);
+      else renderPendingTenants(feat);
+    }
+  };
 
   /* ── INIT ── */
   renderB2CTable();
