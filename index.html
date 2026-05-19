@@ -3903,18 +3903,18 @@
     personaFilter: 'all', sortCol: null, sortDir: 1,
   };
 
-  // Column definitions — key can be an array to try multiple Redash column name variants
+  // Column definitions — keys confirmed from Redash query 8627 console output 19-May-2026
   const TENANT_COLS = [
-    { key: 'tenant',                                  label: 'Tenant',           align: 'left'   },
+    { key: 'tenant_code',                             label: 'Tenant',           align: 'left'   },
     { key: 'product_code',                            label: 'Product Code',     align: 'left'   },
     { key: 'display_name',                            label: 'Display Name',     align: 'left'   },
-    { key: ['warehouse_persona', 'warehouse persona'], label: 'Warehouse Persona', align: 'left' },
-    { key: ['b2b_drr', 'b2b drr'],                    label: 'B2B DRR',          align: 'right', format: 'num' },
-    { key: ['b2c_drr', 'b2c drr'],                    label: 'B2C DRR',          align: 'right', format: 'num' },
-    { key: ['total_drr', 'total drr'],                label: 'Total DRR',        align: 'right', format: 'num' },
+    { key: 'WH_Persona',                              label: 'Warehouse Persona', align: 'left'  },
+    { key: 'b2b_drr',                                 label: 'B2B DRR',          align: 'right', format: 'num' },
+    { key: 'b2c_drr',                                 label: 'B2C DRR',          align: 'right', format: 'num' },
+    { key: 'soi_drr',                                 label: 'Total DRR',        align: 'right', format: 'num' },
     { key: 'traceability',                            label: 'Traceability',     align: 'center', format: 'bool' },
-    { key: ['handheld_user', 'handheld user'],         label: 'Handheld User',   align: 'center', format: 'bool' },
-    { key: '__details__',                              label: 'Details',         align: 'center', format: 'details' },
+    { key: 'handheld',                                label: 'Handheld User',    align: 'center', format: 'bool' },
+    { key: '__details__',                             label: 'Details',          align: 'center', format: 'details' },
   ];
 
   // Normalise a key to lowercase with all spaces/underscores collapsed — used for
@@ -3990,7 +3990,7 @@
 
   function _buildPersonaChips() {
     const personas = [...new Set(
-      tenantAdoptionState.data.map(r => r.warehouse_persona || r['warehouse persona'] || '')
+      tenantAdoptionState.data.map(r => r.WH_Persona || '')
     )].filter(Boolean).sort();
     const container = document.getElementById('tenant-persona-chips');
     if (!container) return;
@@ -4041,9 +4041,7 @@
     // Persona chip filter
     const pf = tenantAdoptionState.personaFilter;
     if (pf && pf !== 'all') {
-      rows = rows.filter(r =>
-        (r.warehouse_persona || r['warehouse persona'] || '') === pf
-      );
+      rows = rows.filter(r => (r.WH_Persona || '') === pf);
     }
 
     // Sorting
