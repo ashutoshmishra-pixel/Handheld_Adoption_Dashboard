@@ -1355,7 +1355,22 @@
         <div class="section-title">Tenant Adoption — All Features</div>
         <div class="section-sub" style="margin-bottom:16px">Cross-feature view of all tenants and their warehouse personas, DRR, traceability, and handheld usage. Pulled live from Redash.</div>
 
-        <!-- Toolbar -->
+        <!-- HHD Status quick-filters -->
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+          <span style="font-size:11px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;
+                       letter-spacing:0.6px;white-space:nowrap">HHD Status</span>
+          <div class="rag-chips" id="tenant-hhd-chips" style="margin-bottom:0">
+            <div class="rag-chip active"  onclick="setTenantHHDFilter('all',this)">All</div>
+            <div class="rag-chip"         onclick="setTenantHHDFilter('no_hhd_b2c',this)"
+                 title="Warehouses not yet live on B2C HHD Picking — CSM prospect list">🎯 Not on HHD — B2C</div>
+            <div class="rag-chip"         onclick="setTenantHHDFilter('no_hhd_b2b',this)"
+                 title="Warehouses not yet live on B2B HHD Picking — CSM prospect list">🎯 Not on HHD — B2B</div>
+            <div class="rag-chip"         onclick="setTenantHHDFilter('no_hhd_any',this)"
+                 title="Warehouses not live on either B2C or B2B HHD Picking">🎯 Not on HHD — Either</div>
+          </div>
+        </div>
+
+        <!-- Search + Persona filter + Refresh -->
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
           <input type="text" id="tenant-adoption-search"
                  placeholder="🔍  Search tenant, facility, persona…"
@@ -1363,6 +1378,8 @@
                         font-size:13px;width:290px;outline:none;font-family:inherit;
                         background:var(--uc-white)"
                  oninput="renderTenantAdoptionTable()" />
+          <span style="font-size:11px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;
+                       letter-spacing:0.6px;white-space:nowrap">Persona</span>
           <div id="tenant-persona-chips" class="rag-chips" style="margin-bottom:0"></div>
           <button onclick="loadTenantAdoptionData(true)"
                   style="margin-left:auto;padding:6px 14px;background:var(--uc-white);
@@ -3900,7 +3917,7 @@
 
   const tenantAdoptionState = {
     fetched: false, loading: false, data: [], error: null,
-    personaFilter: 'all', sortCol: null, sortDir: 1,
+    personaFilter: 'all', hhdFilter: 'all', sortCol: null, sortDir: 1,
   };
 
   // Column definitions — keys confirmed from Redash query 8627 console output 19-May-2026
@@ -4009,6 +4026,27 @@
     renderTenantAdoptionTable();
   }
 
+  function setTenantHHDFilter(filter, el) {
+    tenantAdoptionState.hhdFilter = filter;
+    el.closest('.rag-chips').querySelectorAll('.rag-chip')
+      .forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderTenantAdoptionTable();
+  }
+
+  // Build lookup sets from the existing facilities[] (B2C / B2B adopters from the other pages).
+  // Key = _taNorm(tenant) + '::' + _taNorm(facility)
+  function _buildHHDAdoptedSets() {
+    const b2cSet = new Set();
+    const b2bSet = new Set();
+    facilities.forEach(f => {
+      const key = _taNorm(f.tenant || '') + '::' + _taNorm(f.facility || '');
+      if (f._in_b2c || Number(f.b2c) > 0) b2cSet.add(key);
+      if (f._in_b2b || Number(f.b2b) > 0) b2bSet.add(key);
+    });
+    return { b2cSet, b2bSet };
+  }
+
   // Stub — behaviour defined later by the product team
   function openTenantAdoptionDetails(tenant, displayName) {
     showToast('📋 Details', (displayName || tenant) + ' — coming soon', false);
@@ -4042,6 +4080,19 @@
     const pf = tenantAdoptionState.personaFilter;
     if (pf && pf !== 'all') {
       rows = rows.filter(r => (r.WH_Persona || '') === pf);
+    }
+
+    // HHD adoption filter — cross-references facilities[] from B2C / B2B pages
+    const hf = tenantAdoptionState.hhdFilter;
+    if (hf && hf !== 'all') {
+      const { b2cSet, b2bSet } = _buildHHDAdoptedSets();
+      rows = rows.filter(r => {
+        const key = _taNorm(r.tenant_code || '') + '::' + _taNorm(r.display_name || '');
+        if (hf === 'no_hhd_b2c') return !b2cSet.has(key);
+        if (hf === 'no_hhd_b2b') return !b2bSet.has(key);
+        if (hf === 'no_hhd_any') return !b2cSet.has(key) && !b2bSet.has(key);
+        return true;
+      });
     }
 
     // Sorting
