@@ -41,6 +41,40 @@
       overflow: hidden;
     }
 
+    /* ── MULTISELECT DROPDOWN — Tenant Adoption filters ── */
+    .ms-dropdown { position: relative; display: inline-block; }
+    .ms-trigger {
+      padding: 6px 12px; border: 1px solid var(--uc-border); border-radius: 6px;
+      background: var(--uc-white); font-size: 12px; cursor: pointer;
+      display: flex; align-items: center; gap: 6px; font-family: inherit;
+      color: var(--uc-body-text); white-space: nowrap; user-select: none;
+    }
+    .ms-trigger:hover { background: var(--uc-row-alt); }
+    .ms-trigger.has-sel { border-color: var(--uc-primary); color: var(--uc-primary); background: #EAF4FB; }
+    .ms-count {
+      background: var(--uc-primary); color: #fff; font-size: 10px; font-weight: 700;
+      border-radius: 10px; padding: 1px 6px; min-width: 16px; text-align: center; line-height: 1.5;
+    }
+    .ms-chevron { font-size: 9px; opacity: 0.45; margin-left: 2px; }
+    .ms-panel {
+      position: absolute; top: calc(100% + 5px); left: 0;
+      background: var(--uc-white); border: 1px solid var(--uc-border); border-radius: 8px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.12); min-width: 220px; z-index: 300;
+      padding: 4px 0; display: none;
+    }
+    .ms-panel.open { display: block; }
+    .ms-panel-hdr {
+      padding: 6px 14px 5px; font-size: 10px; font-weight: 700; letter-spacing: 0.6px;
+      text-transform: uppercase; color: var(--uc-secondary);
+      border-bottom: 1px solid var(--uc-border); margin-bottom: 2px;
+    }
+    .ms-option {
+      display: flex; align-items: center; gap: 8px; padding: 7px 14px;
+      cursor: pointer; font-size: 13px; color: var(--uc-body-text); user-select: none;
+    }
+    .ms-option:hover { background: var(--uc-row-alt); }
+    .ms-option input[type=checkbox] { accent-color: var(--uc-primary); cursor: pointer; flex-shrink: 0; }
+
     /* TOP NAV */
     .top-nav {
       height: 48px;
@@ -1355,32 +1389,16 @@
         <div class="section-title">Tenant Adoption — All Features</div>
         <div class="section-sub" style="margin-bottom:16px">Cross-feature view of all tenants and their warehouse personas, DRR, traceability, and handheld usage. Pulled live from Redash.</div>
 
-        <!-- HHD Status quick-filters -->
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-          <span style="font-size:11px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;
-                       letter-spacing:0.6px;white-space:nowrap">HHD Status</span>
-          <div class="rag-chips" id="tenant-hhd-chips" style="margin-bottom:0">
-            <div class="rag-chip active"  onclick="setTenantHHDFilter('all',this)">All</div>
-            <div class="rag-chip"         onclick="setTenantHHDFilter('no_hhd_b2c',this)"
-                 title="Warehouses not yet live on B2C HHD Picking — CSM prospect list">🎯 Not on HHD — B2C</div>
-            <div class="rag-chip"         onclick="setTenantHHDFilter('no_hhd_b2b',this)"
-                 title="Warehouses not yet live on B2B HHD Picking — CSM prospect list">🎯 Not on HHD — B2B</div>
-            <div class="rag-chip"         onclick="setTenantHHDFilter('no_hhd_any',this)"
-                 title="Warehouses not live on either B2C or B2B HHD Picking">🎯 Not on HHD — Either</div>
-          </div>
-        </div>
-
-        <!-- Search + Persona filter + Refresh -->
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <!-- Toolbar: search + multiselect dropdowns + refresh -->
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
           <input type="text" id="tenant-adoption-search"
-                 placeholder="🔍  Search tenant, facility, persona…"
+                 placeholder="🔍  Search tenant, facility…"
                  style="padding:7px 12px;border:1px solid var(--uc-border);border-radius:6px;
-                        font-size:13px;width:290px;outline:none;font-family:inherit;
+                        font-size:13px;width:240px;outline:none;font-family:inherit;
                         background:var(--uc-white)"
                  oninput="renderTenantAdoptionTable()" />
-          <span style="font-size:11px;font-weight:700;color:var(--uc-secondary);text-transform:uppercase;
-                       letter-spacing:0.6px;white-space:nowrap">Persona</span>
-          <div id="tenant-persona-chips" class="rag-chips" style="margin-bottom:0"></div>
+          <!-- Dropdowns rendered by _renderTenantFilterBar() once data loads -->
+          <div id="tenant-filter-bar" style="display:flex;gap:6px;flex-wrap:wrap"></div>
           <button onclick="loadTenantAdoptionData(true)"
                   style="margin-left:auto;padding:6px 14px;background:var(--uc-white);
                          border:1px solid var(--uc-border);border-radius:6px;font-size:12px;
@@ -3917,8 +3935,11 @@
 
   const tenantAdoptionState = {
     fetched: false, loading: false, data: [], error: null,
-    personaFilter: 'all', hhdFilter: 'all', sortCol: null, sortDir: 1,
+    sortCol: null, sortDir: 1,
   };
+
+  // Multiselect filter state — arrays of selected values (empty = show all)
+  const _taFilters = { hhd: [], persona: [], trace: [] };
 
   // Column definitions — keys confirmed from Redash query 8627 console output 19-May-2026
   const TENANT_COLS = [
@@ -3992,7 +4013,7 @@
         tenantAdoptionState.loading = false;
         _taNormMap = null; // reset so it rebuilds against the new dataset
         if (rows.length) console.log('[TenantAdoption] actual column names:', Object.keys(rows[0]));
-        _buildPersonaChips();
+        _renderTenantFilterBar();
         renderTenantAdoptionTable();
       })
       .catch(err => {
@@ -4005,34 +4026,76 @@
       });
   }
 
-  function _buildPersonaChips() {
-    const personas = [...new Set(
-      tenantAdoptionState.data.map(r => r.WH_Persona || '')
-    )].filter(Boolean).sort();
-    const container = document.getElementById('tenant-persona-chips');
-    if (!container) return;
-    container.innerHTML =
-      '<div class="rag-chip active" onclick="setTenantPersonaFilter(\'all\',this)">All</div>' +
-      personas.map(p =>
-        `<div class="rag-chip" onclick="setTenantPersonaFilter('${_taEscHTML(p)}',this)">${_taEscHTML(p)}</div>`
-      ).join('');
+  const _taHHDOptions = [
+    { value: 'no_hhd_b2c', label: '🎯 Not on HHD — B2C' },
+    { value: 'no_hhd_b2b', label: '🎯 Not on HHD — B2B' },
+    { value: 'no_hhd_any', label: '🎯 Not on HHD — Either' },
+  ];
+  const _taTraceOptions = [
+    { value: 'enabled',  label: '✓ Traceability enabled' },
+    { value: 'disabled', label: '— Traceability disabled' },
+  ];
+
+  function _renderTenantFilterBar() {
+    const bar = document.getElementById('tenant-filter-bar');
+    if (!bar) return;
+    const personaOptions = [...new Set(
+      tenantAdoptionState.data.map(r => r.WH_Persona || '').filter(Boolean)
+    )].sort().map(p => ({ value: p, label: p }));
+
+    const defs = [
+      { id: 'ta-dd-hhd',     key: 'hhd',     label: 'HHD Status',        options: _taHHDOptions },
+      { id: 'ta-dd-persona', key: 'persona',  label: 'Warehouse Persona', options: personaOptions },
+      { id: 'ta-dd-trace',   key: 'trace',    label: 'Traceability',      options: _taTraceOptions },
+    ];
+
+    bar.innerHTML = defs.map(d => {
+      const sel = _taFilters[d.key];
+      const hasSel = sel.length > 0;
+      return `<div class="ms-dropdown" id="${d.id}">
+        <button class="ms-trigger${hasSel ? ' has-sel' : ''}"
+                onclick="event.stopPropagation();_taDDToggle('${d.id}')">
+          ${_taEscHTML(d.label)}
+          ${hasSel
+            ? `<span class="ms-count">${sel.length}</span>`
+            : `<span class="ms-chevron">▼</span>`}
+        </button>
+        <div class="ms-panel" id="${d.id}-panel">
+          <div class="ms-panel-hdr">${_taEscHTML(d.label)}</div>
+          ${d.options.length === 0
+            ? `<div style="padding:10px 14px;font-size:12px;color:var(--uc-secondary)">No data yet</div>`
+            : d.options.map(o => `
+              <label class="ms-option">
+                <input type="checkbox" value="${_taEscHTML(o.value)}"
+                       ${sel.includes(o.value) ? 'checked' : ''}
+                       onchange="_taOnFilter('${d.key}','${_taEscHTML(o.value)}',this.checked)">
+                ${_taEscHTML(o.label)}
+              </label>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
   }
 
-  function setTenantPersonaFilter(persona, el) {
-    tenantAdoptionState.personaFilter = persona;
-    el.closest('.rag-chips').querySelectorAll('.rag-chip')
-      .forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
+  function _taDDToggle(id) {
+    const panel = document.getElementById(id + '-panel');
+    if (!panel) return;
+    const wasOpen = panel.classList.contains('open');
+    document.querySelectorAll('.ms-panel.open').forEach(p => p.classList.remove('open'));
+    if (!wasOpen) panel.classList.add('open');
+  }
+
+  function _taOnFilter(key, value, checked) {
+    const arr = _taFilters[key];
+    if (checked && !arr.includes(value)) arr.push(value);
+    if (!checked) { const i = arr.indexOf(value); if (i > -1) arr.splice(i, 1); }
+    _renderTenantFilterBar();   // refresh badges / highlight
     renderTenantAdoptionTable();
   }
 
-  function setTenantHHDFilter(filter, el) {
-    tenantAdoptionState.hhdFilter = filter;
-    el.closest('.rag-chips').querySelectorAll('.rag-chip')
-      .forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-    renderTenantAdoptionTable();
-  }
+  // Close all dropdowns on outside click
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.ms-panel.open').forEach(p => p.classList.remove('open'));
+  });
 
   // Build lookup sets from the existing facilities[] (B2C / B2B adopters from the other pages).
   // Key = _taNorm(tenant) + '::' + _taNorm(facility)
@@ -4076,22 +4139,32 @@
       rows = rows.filter(r => Object.values(r).some(v => String(v).toLowerCase().includes(q)));
     }
 
-    // Persona chip filter
-    const pf = tenantAdoptionState.personaFilter;
-    if (pf && pf !== 'all') {
-      rows = rows.filter(r => (r.WH_Persona || '') === pf);
+    // Warehouse Persona filter (multiselect)
+    if (_taFilters.persona.length) {
+      rows = rows.filter(r => _taFilters.persona.includes(r.WH_Persona || ''));
     }
 
-    // HHD adoption filter — cross-references facilities[] from B2C / B2B pages
-    const hf = tenantAdoptionState.hhdFilter;
-    if (hf && hf !== 'all') {
+    // HHD adoption filter — cross-references facilities[] from the B2C / B2B pages
+    if (_taFilters.hhd.length) {
       const { b2cSet, b2bSet } = _buildHHDAdoptedSets();
       rows = rows.filter(r => {
         const key = _taNorm(r.tenant_code || '') + '::' + _taNorm(r.display_name || '');
-        if (hf === 'no_hhd_b2c') return !b2cSet.has(key);
-        if (hf === 'no_hhd_b2b') return !b2bSet.has(key);
-        if (hf === 'no_hhd_any') return !b2cSet.has(key) && !b2bSet.has(key);
-        return true;
+        return _taFilters.hhd.some(f => {
+          if (f === 'no_hhd_b2c') return !b2cSet.has(key);
+          if (f === 'no_hhd_b2b') return !b2bSet.has(key);
+          if (f === 'no_hhd_any') return !b2cSet.has(key) && !b2bSet.has(key);
+          return false;
+        });
+      });
+    }
+
+    // Traceability filter (multiselect)
+    if (_taFilters.trace.length) {
+      rows = rows.filter(r => {
+        const v = String(r.traceability ?? '').toLowerCase();
+        const enabled = v === 'true' || v === '1' || v === 'yes' || v === 'enabled';
+        return (_taFilters.trace.includes('enabled') && enabled) ||
+               (_taFilters.trace.includes('disabled') && !enabled);
       });
     }
 
