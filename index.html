@@ -75,6 +75,21 @@
     .ms-option:hover { background: var(--uc-row-alt); }
     .ms-option input[type=checkbox] { accent-color: var(--uc-primary); cursor: pointer; flex-shrink: 0; }
 
+    /* Saved filter preset chips */
+    .ta-preset-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px; border-radius: 20px;
+      background: #EAF4FB; border: 1px solid #B3D8EE;
+      font-size: 12px; font-weight: 500; color: var(--uc-primary);
+      cursor: pointer; user-select: none; white-space: nowrap;
+    }
+    .ta-preset-chip:hover { background: #d4ecf7; }
+    .ta-preset-chip .ta-preset-del {
+      font-size: 10px; color: #888; line-height: 1;
+      padding: 1px 2px; border-radius: 3px; margin-left: 2px;
+    }
+    .ta-preset-chip .ta-preset-del:hover { color: var(--uc-error); background: rgba(173,40,32,0.08); }
+
     /* TOP NAV */
     .top-nav {
       height: 48px;
@@ -1389,6 +1404,40 @@
         <div class="section-title">Tenant Adoption — All Features</div>
         <div class="section-sub" style="margin-bottom:16px">Cross-feature view of all tenants and their warehouse personas, DRR, traceability, and handheld usage. Pulled live from Redash.</div>
 
+        <!-- Saved filter presets -->
+        <div id="ta-presets-wrap" style="margin-bottom:10px;display:none">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:11px;font-weight:700;color:var(--uc-secondary);
+                         text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap;flex-shrink:0">
+              Saved Filters
+            </span>
+            <div id="ta-presets-list" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"></div>
+            <button id="ta-preset-save-btn" onclick="showTaPresetForm()"
+                    style="display:none;padding:4px 11px;border:1px dashed var(--uc-primary);
+                           border-radius:6px;background:transparent;color:var(--uc-primary);
+                           font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap">
+              + Save current
+            </button>
+          </div>
+          <!-- Inline save form (hidden until admin clicks "+ Save current") -->
+          <div id="ta-preset-form" style="display:none;margin-top:8px;display:none;
+               align-items:center;gap:8px;flex-wrap:wrap">
+            <input id="ta-preset-name-input" type="text" placeholder="Filter preset name…"
+                   style="padding:6px 10px;border:1px solid var(--uc-border);border-radius:6px;
+                          font-size:13px;font-family:inherit;outline:none;width:220px">
+            <button onclick="saveTaPreset()"
+                    style="padding:6px 14px;background:var(--uc-primary);color:#fff;border:none;
+                           border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">
+              Save
+            </button>
+            <button onclick="hideTaPresetForm()"
+                    style="padding:6px 10px;background:var(--uc-white);border:1px solid var(--uc-border);
+                           border-radius:6px;font-size:12px;cursor:pointer;font-family:inherit;color:var(--uc-secondary)">
+              Cancel
+            </button>
+          </div>
+        </div>
+
         <!-- Toolbar: search + multiselect dropdowns + refresh -->
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px">
           <input type="text" id="tenant-adoption-search"
@@ -1523,6 +1572,7 @@
       const panel = document.getElementById('tenant-panel-0');
       if (panel) panel.classList.add('active');
       loadTenantAdoptionData();
+      loadTaPresets();
     } else {
       // Reset sub-tab to 0
       activeSubTab = 0;
@@ -3939,7 +3989,7 @@
   };
 
   // Multiselect filter state — arrays of selected values (empty = show all)
-  const _taFilters = { hhd: [], persona: [], trace: [] };
+  const _taFilters = { hhd: [], app: [], persona: [], trace: [] };
 
   // Column definitions — keys confirmed from Redash query 8627 console output 19-May-2026
   const TENANT_COLS = [
@@ -4031,10 +4081,18 @@
     { value: 'no_hhd_b2b', label: '🎯 Not on HHD — B2B' },
     { value: 'no_hhd_any', label: '🎯 Not on HHD — Either' },
   ];
-  const _taTraceOptions = [
-    { value: 'enabled',  label: '✓ Traceability enabled' },
-    { value: 'disabled', label: '— Traceability disabled' },
+
+  const _taAppOptions = [
+    { value: 'b2c', label: '📦 B2C Picking' },
+    { value: 'b2b', label: '🏭 B2B Picking' },
+    { value: 'cc',  label: '🔄 Cycle Count' },
   ];
+
+  // Built dynamically from data — see _renderTenantFilterBar()
+  let _taTraceOptions = [];
+
+  // DRR threshold state (not a checkbox filter — stored separately)
+  const _taDrrMin = { b2c: '', b2b: '' };
 
   function _renderTenantFilterBar() {
     const bar = document.getElementById('tenant-filter-bar');
@@ -4043,22 +4101,27 @@
       tenantAdoptionState.data.map(r => r.WH_Persona || '').filter(Boolean)
     )].sort().map(p => ({ value: p, label: p }));
 
+    // Build traceability options from actual distinct values in the data
+    _taTraceOptions = [...new Set(
+      tenantAdoptionState.data.map(r => String(r.traceability ?? '')).filter(Boolean)
+    )].sort().map(v => ({ value: v, label: v }));
+
     const defs = [
+      { id: 'ta-dd-app',     key: 'app',     label: 'App Adoption',      options: _taAppOptions },
       { id: 'ta-dd-hhd',     key: 'hhd',     label: 'HHD Status',        options: _taHHDOptions },
       { id: 'ta-dd-persona', key: 'persona',  label: 'Warehouse Persona', options: personaOptions },
       { id: 'ta-dd-trace',   key: 'trace',    label: 'Traceability',      options: _taTraceOptions },
     ];
 
-    bar.innerHTML = defs.map(d => {
+    // Checkbox dropdowns
+    const checkboxHTML = defs.map(d => {
       const sel = _taFilters[d.key];
       const hasSel = sel.length > 0;
       return `<div class="ms-dropdown" id="${d.id}">
         <button class="ms-trigger${hasSel ? ' has-sel' : ''}"
                 onclick="event.stopPropagation();_taDDToggle('${d.id}')">
           ${_taEscHTML(d.label)}
-          ${hasSel
-            ? `<span class="ms-count">${sel.length}</span>`
-            : `<span class="ms-chevron">▼</span>`}
+          ${hasSel ? `<span class="ms-count">${sel.length}</span>` : `<span class="ms-chevron">▼</span>`}
         </button>
         <div class="ms-panel" id="${d.id}-panel">
           <div class="ms-panel-hdr">${_taEscHTML(d.label)}</div>
@@ -4074,6 +4137,47 @@
         </div>
       </div>`;
     }).join('');
+
+    // DRR threshold dropdown (custom input panel — not checkbox based)
+    const drrActive = _taDrrMin.b2c !== '' || _taDrrMin.b2b !== '';
+    const drrBadge  = [
+      _taDrrMin.b2c !== '' ? `B2C≥${Number(_taDrrMin.b2c).toLocaleString('en-IN')}` : '',
+      _taDrrMin.b2b !== '' ? `B2B≥${Number(_taDrrMin.b2b).toLocaleString('en-IN')}` : '',
+    ].filter(Boolean).join(', ');
+    const drrHTML = `<div class="ms-dropdown" id="ta-dd-drr">
+      <button class="ms-trigger${drrActive ? ' has-sel' : ''}"
+              onclick="event.stopPropagation();_taDDToggle('ta-dd-drr')">
+        Min DRR
+        ${drrActive ? `<span class="ms-count" style="font-size:9px;padding:1px 5px">${drrBadge}</span>` : `<span class="ms-chevron">▼</span>`}
+      </button>
+      <div class="ms-panel" id="ta-dd-drr-panel" onclick="event.stopPropagation()">
+        <div class="ms-panel-hdr">Minimum DRR Threshold</div>
+        <div style="padding:10px 14px;display:flex;flex-direction:column;gap:10px;min-width:200px">
+          <div>
+            <div style="font-size:11px;color:var(--uc-secondary);margin-bottom:4px;font-weight:500">B2C DRR ≥</div>
+            <input type="number" min="0" placeholder="e.g. 1000"
+                   value="${_taEscHTML(_taDrrMin.b2c)}"
+                   oninput="_taOnDrrChange('b2c',this.value)"
+                   style="width:100%;padding:6px 8px;border:1px solid var(--uc-border);
+                          border-radius:5px;font-size:13px;font-family:inherit;outline:none">
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--uc-secondary);margin-bottom:4px;font-weight:500">B2B DRR ≥</div>
+            <input type="number" min="0" placeholder="e.g. 500"
+                   value="${_taEscHTML(_taDrrMin.b2b)}"
+                   oninput="_taOnDrrChange('b2b',this.value)"
+                   style="width:100%;padding:6px 8px;border:1px solid var(--uc-border);
+                          border-radius:5px;font-size:13px;font-family:inherit;outline:none">
+          </div>
+          ${drrActive ? `<button onclick="_taClearDrr()"
+                   style="padding:5px;border:1px solid var(--uc-border);border-radius:5px;
+                          background:var(--uc-white);font-size:11px;cursor:pointer;
+                          color:var(--uc-secondary);font-family:inherit">Clear</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+
+    bar.innerHTML = checkboxHTML + drrHTML;
   }
 
   function _taDDToggle(id) {
@@ -4092,6 +4196,18 @@
     renderTenantAdoptionTable();
   }
 
+  function _taOnDrrChange(field, val) {
+    _taDrrMin[field] = val;
+    _renderTenantFilterBar();   // refresh badge
+    renderTenantAdoptionTable();
+  }
+
+  function _taClearDrr() {
+    _taDrrMin.b2c = ''; _taDrrMin.b2b = '';
+    _renderTenantFilterBar();
+    renderTenantAdoptionTable();
+  }
+
   // Close all dropdowns on outside click
   document.addEventListener('click', () => {
     document.querySelectorAll('.ms-panel.open').forEach(p => p.classList.remove('open'));
@@ -4100,14 +4216,14 @@
   // Build lookup sets from the existing facilities[] (B2C / B2B adopters from the other pages).
   // Key = _taNorm(tenant) + '::' + _taNorm(facility)
   function _buildHHDAdoptedSets() {
-    const b2cSet = new Set();
-    const b2bSet = new Set();
+    const b2cSet = new Set(), b2bSet = new Set(), ccSet = new Set();
     facilities.forEach(f => {
       const key = _taNorm(f.tenant || '') + '::' + _taNorm(f.facility || '');
       if (f._in_b2c || Number(f.b2c) > 0) b2cSet.add(key);
       if (f._in_b2b || Number(f.b2b) > 0) b2bSet.add(key);
+      if (f._in_cc  || Number(f.cc)  > 0) ccSet.add(key);
     });
-    return { b2cSet, b2bSet };
+    return { b2cSet, b2bSet, ccSet };
   }
 
   // Stub — behaviour defined later by the product team
@@ -4144,6 +4260,20 @@
       rows = rows.filter(r => _taFilters.persona.includes(r.WH_Persona || ''));
     }
 
+    // App Adoption filter — show only warehouses live on the selected feature(s)
+    if (_taFilters.app.length) {
+      const { b2cSet, b2bSet, ccSet } = _buildHHDAdoptedSets();
+      rows = rows.filter(r => {
+        const key = _taNorm(r.tenant_code || '') + '::' + _taNorm(r.display_name || '');
+        return _taFilters.app.some(f => {
+          if (f === 'b2c') return b2cSet.has(key);
+          if (f === 'b2b') return b2bSet.has(key);
+          if (f === 'cc')  return ccSet.has(key);
+          return false;
+        });
+      });
+    }
+
     // HHD adoption filter — cross-references facilities[] from the B2C / B2B pages
     if (_taFilters.hhd.length) {
       const { b2cSet, b2bSet } = _buildHHDAdoptedSets();
@@ -4158,13 +4288,22 @@
       });
     }
 
-    // Traceability filter (multiselect)
+    // Traceability filter (multiselect — exact values from data)
     if (_taFilters.trace.length) {
+      rows = rows.filter(r => _taFilters.trace.includes(String(r.traceability ?? '')));
+    }
+
+    // Min DRR threshold — OR logic: row passes if either condition is met
+    const minB2C = _taDrrMin.b2c !== '' ? Number(_taDrrMin.b2c) : null;
+    const minB2B = _taDrrMin.b2b !== '' ? Number(_taDrrMin.b2b) : null;
+    if (minB2C !== null || minB2B !== null) {
       rows = rows.filter(r => {
-        const v = String(r.traceability ?? '').toLowerCase();
-        const enabled = v === 'true' || v === '1' || v === 'yes' || v === 'enabled';
-        return (_taFilters.trace.includes('enabled') && enabled) ||
-               (_taFilters.trace.includes('disabled') && !enabled);
+        const b2c = Number(r.b2c_drr) || 0;
+        const b2b = Number(r.b2b_drr) || 0;
+        if (minB2C !== null && minB2B !== null) return b2c >= minB2C && b2b >= minB2B;
+        if (minB2C !== null) return b2c >= minB2C;
+        if (minB2B !== null) return b2b >= minB2B;
+        return true;
       });
     }
 
@@ -4246,6 +4385,147 @@
         '</tr>'
       ).join('') +
       '</tbody></table>';
+  }
+
+  /* ── TENANT ADOPTION FILTER PRESETS ──────────────────────────────────────── */
+  const TA_PRESET_ADMINS_FE = ['ashutosh.mishra@unicommerce.com'];
+
+  function _getTaUserEmail() {
+    try { return JSON.parse(sessionStorage.getItem('hhd_gauth') || '{}').email || ''; }
+    catch(e) { return ''; }
+  }
+  function _isTaPresetAdmin() {
+    return TA_PRESET_ADMINS_FE.includes(_getTaUserEmail().toLowerCase());
+  }
+
+  const _taPresetsState = { loaded: false, presets: [] };
+
+  async function loadTaPresets() {
+    if (_taPresetsState.loaded) { renderTaPresets(); return; }
+    const result = await sheetFetch({ action: 'read_ta_presets' });
+    _taPresetsState.presets = (result && result.presets) ? result.presets : [];
+    _taPresetsState.loaded  = true;
+    renderTaPresets();
+  }
+
+  function renderTaPresets() {
+    const wrap     = document.getElementById('ta-presets-wrap');
+    const list     = document.getElementById('ta-presets-list');
+    const saveBtn  = document.getElementById('ta-preset-save-btn');
+    if (!wrap || !list) return;
+
+    const isAdmin  = _isTaPresetAdmin();
+    const presets  = _taPresetsState.presets;
+
+    // Show the section if there are presets OR user is admin
+    wrap.style.display = (presets.length || isAdmin) ? '' : 'none';
+    if (saveBtn) saveBtn.style.display = isAdmin ? '' : 'none';
+
+    if (!presets.length) {
+      list.innerHTML = '<span style="font-size:12px;color:var(--uc-secondary);font-style:italic">'
+        + (isAdmin ? 'No presets yet — save your first one below' : 'No saved filters') + '</span>';
+      return;
+    }
+
+    list.innerHTML = presets.map(p => `
+      <span class="ta-preset-chip" title="${_taEscHTML(p.name)}">
+        <span onclick="applyTaPreset('${_taEscHTML(p.id)}')">🔖 ${_taEscHTML(p.name)}</span>
+        ${isAdmin
+          ? `<span class="ta-preset-del" title="Delete preset"
+                   onclick="event.stopPropagation();deleteTaPreset('${_taEscHTML(p.id)}')">✕</span>`
+          : ''}
+      </span>`).join('');
+  }
+
+  function applyTaPreset(id) {
+    const p = _taPresetsState.presets.find(x => x.id === id);
+    if (!p) return;
+    try {
+      const f = JSON.parse(p.filtersJson);
+      // Apply all filter state
+      _taFilters.app     = f.app     || [];
+      _taFilters.hhd     = f.hhd     || [];
+      _taFilters.persona = f.persona || [];
+      _taFilters.trace   = f.trace   || [];
+      _taDrrMin.b2c = f.drrB2c || '';
+      _taDrrMin.b2b = f.drrB2b || '';
+      // Clear search
+      const searchEl = document.getElementById('tenant-adoption-search');
+      if (searchEl) searchEl.value = '';
+      _renderTenantFilterBar();
+      renderTenantAdoptionTable();
+      showToast('🔖 Preset applied', p.name, false);
+    } catch(e) {
+      showToast('⚠ Error', 'Could not apply preset: ' + e.message, true);
+    }
+  }
+
+  function showTaPresetForm() {
+    const form = document.getElementById('ta-preset-form');
+    if (form) { form.style.display = 'flex'; document.getElementById('ta-preset-name-input')?.focus(); }
+  }
+  function hideTaPresetForm() {
+    const form = document.getElementById('ta-preset-form');
+    if (form) form.style.display = 'none';
+    const inp = document.getElementById('ta-preset-name-input');
+    if (inp) inp.value = '';
+  }
+
+  async function saveTaPreset() {
+    if (!_isTaPresetAdmin()) return;
+    const nameEl = document.getElementById('ta-preset-name-input');
+    const name   = (nameEl?.value || '').trim();
+    if (!name) { showToast('⚠ Name required', 'Enter a name for the preset', true); return; }
+
+    const preset = {
+      id:          Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      name,
+      filtersJson: JSON.stringify({
+        app:     [..._taFilters.app],
+        hhd:     [..._taFilters.hhd],
+        persona: [..._taFilters.persona],
+        trace:   [..._taFilters.trace],
+        drrB2c:  _taDrrMin.b2c,
+        drrB2b:  _taDrrMin.b2b,
+      }),
+      createdBy:   _getTaUserEmail(),
+      createdAt:   new Date().toISOString(),
+    };
+
+    const result = await sheetFetch({
+      action: 'save_ta_preset',
+      preset: JSON.stringify(preset),
+      email:  _getTaUserEmail(),
+    });
+
+    if (result && result.saved) {
+      _taPresetsState.presets.push(preset);
+      hideTaPresetForm();
+      renderTaPresets();
+      showToast('✅ Preset saved', name, false);
+    } else {
+      showToast('⚠ Save failed', (result && result.error) || 'Unknown error', true);
+    }
+  }
+
+  async function deleteTaPreset(id) {
+    if (!_isTaPresetAdmin()) return;
+    const p = _taPresetsState.presets.find(x => x.id === id);
+    if (!confirm('Delete preset "' + (p?.name || id) + '"?')) return;
+
+    const result = await sheetFetch({
+      action: 'delete_ta_preset',
+      id,
+      email: _getTaUserEmail(),
+    });
+
+    if (result && result.deleted) {
+      _taPresetsState.presets = _taPresetsState.presets.filter(x => x.id !== id);
+      renderTaPresets();
+      showToast('🗑 Preset deleted', p?.name || '', false);
+    } else {
+      showToast('⚠ Delete failed', (result && result.error) || 'Unknown error', true);
+    }
   }
 
   /* ── INIT ── */
